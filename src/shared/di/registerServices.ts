@@ -20,6 +20,8 @@ import { IVaultService } from './interfaces/IVaultService';
 import { IKeyringService } from './interfaces/IKeyringService';
 import { ISessionService } from './interfaces/ISessionService';
 import { INetworkService } from './interfaces/INetworkService';
+import { ISignerService } from './interfaces/ISignerService';
+import { SignerService } from '../services/SignerService';
 
 /**
  * Register all core services
@@ -83,6 +85,12 @@ export function registerServices(): void {
       });
       return networkService;
     },
+    lifecycle: 'singleton',
+  });
+
+  // Signer Service - message signing (EIP-191, EIP-712, SIWE)
+  container.register<ISignerService>(SERVICE_TOKENS.SIGNER, {
+    useFactory: () => new SignerService(),
     lifecycle: 'singleton',
   });
 

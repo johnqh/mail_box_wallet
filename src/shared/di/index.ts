@@ -16,3 +16,10 @@ export type { IVaultService, VaultData } from './interfaces/IVaultService';
 export type { IKeyringService, Account } from './interfaces/IKeyringService';
 export type { ISessionService, SessionState } from './interfaces/ISessionService';
 export type { INetworkService, Network, NetworkValidation } from './interfaces/INetworkService';
+export type {
+  ISignerService,
+  TypedData,
+  SiweMessage,
+  SignatureResult,
+  VerificationResult,
+} from './interfaces/ISignerService';

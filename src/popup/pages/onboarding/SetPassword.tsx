@@ -6,7 +6,8 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Input, Card, Layout } from '../../components';
+import { Button, Input, Label, Card, CardContent } from '@sudobility/components';
+import { Layout } from '../../components';
 import { useWalletStore } from '../../store/walletStore';
 
 export function SetPassword() {
@@ -79,86 +80,92 @@ export function SetPassword() {
     >
       <div className="max-w-md mx-auto">
         <Card>
-          <div className="space-y-4">
-            <div>
-              <Input
-                label="Password"
-                type="password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setError('');
-                }}
-                placeholder="Enter password"
-                fullWidth
-              />
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError('');
+                  }}
+                  placeholder="Enter password"
+                  className="w-full"
+                />
 
-              {/* Password Strength Indicator */}
-              {password && (
-                <div className="mt-2">
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-gray-600">Password Strength:</span>
-                    <span className={`font-medium text-${strength.color}-600`}>
-                      {strength.label}
-                    </span>
+                {/* Password Strength Indicator */}
+                {password && (
+                  <div className="mt-2">
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="text-gray-600">Password Strength:</span>
+                      <span className={`font-medium text-${strength.color}-600`}>
+                        {strength.label}
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full bg-${strength.color}-500 transition-all duration-300`}
+                        style={{ width: `${(strength.score / 4) * 100}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full bg-${strength.color}-500 transition-all duration-300`}
-                      style={{ width: `${(strength.score / 4) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            <Input
-              label="Confirm Password"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                setError('');
-              }}
-              placeholder="Re-enter password"
-              fullWidth
-              error={error}
-            />
+              <div>
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setError('');
+                  }}
+                  placeholder="Re-enter password"
+                  className="w-full"
+                />
+                {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+              </div>
 
-            <div className="pt-2">
-              <Button
-                fullWidth
-                variant="primary"
-                onClick={handleSubmit}
-                disabled={!password || !confirmPassword || password !== confirmPassword || loading}
-                loading={loading}
-              >
-                Create Wallet
-              </Button>
+              <div className="pt-2">
+                <Button
+                  className="w-full"
+                  onClick={handleSubmit}
+                  disabled={!password || !confirmPassword || password !== confirmPassword || loading}
+                >
+                  {loading ? 'Creating...' : 'Create Wallet'}
+                </Button>
+              </div>
             </div>
-          </div>
+          </CardContent>
         </Card>
 
         {/* Password Requirements */}
-        <Card className="mt-4 bg-gray-50" padding="sm">
-          <p className="text-sm font-medium text-gray-900 mb-2">Password Requirements:</p>
-          <ul className="text-xs text-gray-600 space-y-1">
-            <li className={password.length >= 8 ? 'text-green-600' : ''}>
-              {password.length >= 8 ? '✓' : '○'} At least 8 characters
-            </li>
-            <li className={password.length >= 12 ? 'text-green-600' : ''}>
-              {password.length >= 12 ? '✓' : '○'} 12+ characters recommended
-            </li>
-            <li className={/[a-z]/.test(password) && /[A-Z]/.test(password) ? 'text-green-600' : ''}>
-              {/[a-z]/.test(password) && /[A-Z]/.test(password) ? '✓' : '○'} Mix of uppercase and lowercase
-            </li>
-            <li className={/\d/.test(password) ? 'text-green-600' : ''}>
-              {/\d/.test(password) ? '✓' : '○'} Include numbers
-            </li>
-            <li className={/[^a-zA-Z0-9]/.test(password) ? 'text-green-600' : ''}>
-              {/[^a-zA-Z0-9]/.test(password) ? '✓' : '○'} Special characters (!@#$%^&*)
-            </li>
-          </ul>
+        <Card className="mt-4 bg-gray-50">
+          <CardContent className="py-3">
+            <p className="text-sm font-medium text-gray-900 mb-2">Password Requirements:</p>
+            <ul className="text-xs text-gray-600 space-y-1">
+              <li className={password.length >= 8 ? 'text-green-600' : ''}>
+                {password.length >= 8 ? '✓' : '○'} At least 8 characters
+              </li>
+              <li className={password.length >= 12 ? 'text-green-600' : ''}>
+                {password.length >= 12 ? '✓' : '○'} 12+ characters recommended
+              </li>
+              <li className={/[a-z]/.test(password) && /[A-Z]/.test(password) ? 'text-green-600' : ''}>
+                {/[a-z]/.test(password) && /[A-Z]/.test(password) ? '✓' : '○'} Mix of uppercase and lowercase
+              </li>
+              <li className={/\d/.test(password) ? 'text-green-600' : ''}>
+                {/\d/.test(password) ? '✓' : '○'} Include numbers
+              </li>
+              <li className={/[^a-zA-Z0-9]/.test(password) ? 'text-green-600' : ''}>
+                {/[^a-zA-Z0-9]/.test(password) ? '✓' : '○'} Special characters (!@#$%^&*)
+              </li>
+            </ul>
+          </CardContent>
         </Card>
       </div>
     </Layout>

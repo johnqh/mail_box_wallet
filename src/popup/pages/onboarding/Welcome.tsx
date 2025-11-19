@@ -6,7 +6,8 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Layout } from '../../components';
+import { Button, Card, CardContent } from '@sudobility/components';
+import { Layout } from '../../components';
 
 export function Welcome() {
   const navigate = useNavigate();
@@ -28,31 +29,34 @@ export function Welcome() {
         {/* Action Cards */}
         <div className="space-y-4">
           <Card>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Create New Wallet</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Generate a new wallet with a 12-word recovery phrase
-            </p>
-            <Button
-              fullWidth
-              variant="primary"
-              onClick={() => navigate('/onboarding/create')}
-            >
-              Create New Wallet
-            </Button>
+            <CardContent>
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">Create New Wallet</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Generate a new wallet with a 12-word recovery phrase
+              </p>
+              <Button
+                className="w-full"
+                onClick={() => navigate('/onboarding/create')}
+              >
+                Create New Wallet
+              </Button>
+            </CardContent>
           </Card>
 
           <Card>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Import Existing Wallet</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Restore your wallet using a recovery phrase
-            </p>
-            <Button
-              fullWidth
-              variant="secondary"
-              onClick={() => navigate('/onboarding/import')}
-            >
-              Import Wallet
-            </Button>
+            <CardContent>
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">Import Existing Wallet</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Restore your wallet using a recovery phrase
+              </p>
+              <Button
+                className="w-full"
+                variant="secondary"
+                onClick={() => navigate('/onboarding/import')}
+              >
+                Import Wallet
+              </Button>
+            </CardContent>
           </Card>
         </div>
 

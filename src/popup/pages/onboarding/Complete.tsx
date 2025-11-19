@@ -6,7 +6,8 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Layout } from '../../components';
+import { Button, Card, CardContent } from '@sudobility/components';
+import { Layout } from '../../components';
 import { useWalletStore } from '../../store/walletStore';
 
 export function Complete() {
@@ -37,52 +38,57 @@ export function Complete() {
 
         {/* Wallet Info */}
         <Card className="mb-6">
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-2">Your Wallet Address</p>
-            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-              <p className="font-mono text-sm text-gray-900 break-all">
-                {currentAddress || 'Loading...'}
-              </p>
+          <CardContent>
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-2">Your Wallet Address</p>
+              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                <p className="font-mono text-sm text-gray-900 break-all">
+                  {currentAddress || 'Loading...'}
+                </p>
+              </div>
             </div>
-          </div>
+          </CardContent>
         </Card>
 
         {/* Next Steps */}
         <Card className="mb-6">
-          <h3 className="font-semibold text-gray-900 mb-3">What's Next?</h3>
-          <ul className="space-y-2 text-sm text-gray-700">
-            <li className="flex items-start">
-              <span className="mr-2">✓</span>
-              <span>Your wallet is ready to sign messages and authenticate</span>
-            </li>
-            <li className="flex items-start">
-              <span className="mr-2">✓</span>
-              <span>Connect to dApps to start using your wallet</span>
-            </li>
-            <li className="flex items-start">
-              <span className="mr-2">⚠️</span>
-              <span>Remember: This wallet is for signing only, not for transactions</span>
-            </li>
-          </ul>
+          <CardContent>
+            <h3 className="font-semibold text-gray-900 mb-3">What's Next?</h3>
+            <ul className="space-y-2 text-sm text-gray-700">
+              <li className="flex items-start">
+                <span className="mr-2">✓</span>
+                <span>Your wallet is ready to sign messages and authenticate</span>
+              </li>
+              <li className="flex items-start">
+                <span className="mr-2">✓</span>
+                <span>Connect to dApps to start using your wallet</span>
+              </li>
+              <li className="flex items-start">
+                <span className="mr-2">⚠️</span>
+                <span>Remember: This wallet is for signing only, not for transactions</span>
+              </li>
+            </ul>
+          </CardContent>
         </Card>
 
         <Button
-          fullWidth
-          variant="primary"
+          className="w-full"
           onClick={handleContinue}
         >
           Go to Wallet
         </Button>
 
         {/* Security Reminder */}
-        <Card className="mt-6 bg-yellow-50 border-yellow-200" padding="sm">
-          <div className="flex items-start">
-            <span className="text-xl mr-2">🔒</span>
-            <p className="text-xs text-gray-700">
-              <strong>Security Tip:</strong> Never share your recovery phrase or password with anyone.
-              Identity Wallet will never ask for this information.
-            </p>
-          </div>
+        <Card className="mt-6 bg-yellow-50 border-yellow-200">
+          <CardContent className="py-3">
+            <div className="flex items-start">
+              <span className="text-xl mr-2">🔒</span>
+              <p className="text-xs text-gray-700">
+                <strong>Security Tip:</strong> Never share your recovery phrase or password with anyone.
+                Identity Wallet will never ask for this information.
+              </p>
+            </div>
+          </CardContent>
         </Card>
       </div>
     </Layout>

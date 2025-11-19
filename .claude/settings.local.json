@@ -5,7 +5,8 @@
       "Bash(npm install:*)",
       "Bash(npm test:*)",
       "Bash(cat:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(node debug-sign.js:*)"
     ],
     "deny": [],
     "ask": []

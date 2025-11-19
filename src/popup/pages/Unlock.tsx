@@ -6,7 +6,8 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Input, Card, Layout } from '../components';
+import { Button, Input, Label, Card, CardContent } from '@sudobility/components';
+import { Layout } from '../components';
 import { useWalletStore } from '../store/walletStore';
 
 export function Unlock() {
@@ -56,33 +57,36 @@ export function Unlock() {
         </div>
 
         <Card>
-          <form onSubmit={handleUnlock}>
-            <Input
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setError('');
-              }}
-              placeholder="Enter your password"
-              fullWidth
-              error={error}
-              autoFocus
-            />
+          <CardContent>
+            <form onSubmit={handleUnlock}>
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError('');
+                  }}
+                  placeholder="Enter your password"
+                  className="w-full"
+                  autoFocus
+                />
+                {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+              </div>
 
-            <div className="mt-6">
-              <Button
-                type="submit"
-                fullWidth
-                variant="primary"
-                disabled={!password || loading}
-                loading={loading}
-              >
-                Unlock Wallet
-              </Button>
-            </div>
-          </form>
+              <div className="mt-6">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={!password || loading}
+                >
+                  {loading ? 'Unlocking...' : 'Unlock Wallet'}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
         </Card>
 
         <div className="mt-6 text-center">

@@ -6,7 +6,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Layout } from '../../components';
+import { Button, Card, CardContent } from '@sudobility/components';
+import { Layout } from '../../components';
 import { useWalletStore } from '../../store/walletStore';
 import { getService, SERVICE_TOKENS } from '@/shared/di';
 import type { IWalletService } from '@/shared/di';
@@ -86,34 +87,36 @@ export function CreateWallet() {
 
             {/* Seed Phrase Display */}
             <Card>
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                {words.map((word, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center bg-gray-50 rounded-lg p-3 border border-gray-200"
-                  >
-                    <span className="text-xs text-gray-500 mr-2 w-5">{index + 1}.</span>
-                    <span className="font-mono text-sm font-medium text-gray-900">{word}</span>
-                  </div>
-                ))}
-              </div>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  {words.map((word, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center bg-gray-50 rounded-lg p-3 border border-gray-200"
+                    >
+                      <span className="text-xs text-gray-500 mr-2 w-5">{index + 1}.</span>
+                      <span className="font-mono text-sm font-medium text-gray-900">{word}</span>
+                    </div>
+                  ))}
+                </div>
 
-              <div className="flex gap-3">
-                <Button
-                  variant="secondary"
-                  fullWidth
-                  onClick={handleCopy}
-                >
-                  {copied ? '✓ Copied!' : 'Copy to Clipboard'}
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={generateSeedPhrase}
-                  className="flex-shrink-0"
-                >
-                  🔄 Generate New
-                </Button>
-              </div>
+                <div className="flex gap-3">
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={handleCopy}
+                  >
+                    {copied ? '✓ Copied!' : 'Copy to Clipboard'}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={generateSeedPhrase}
+                    className="flex-shrink-0"
+                  >
+                    🔄 Generate New
+                  </Button>
+                </div>
+              </CardContent>
             </Card>
 
             {/* Confirmation Checkbox */}
@@ -133,8 +136,7 @@ export function CreateWallet() {
             {/* Continue Button */}
             <div className="mt-6">
               <Button
-                fullWidth
-                variant="primary"
+                className="w-full"
                 onClick={handleContinue}
                 disabled={!document.getElementById('saved-checkbox')?.['checked']}
               >

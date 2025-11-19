@@ -11,6 +11,7 @@
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
     "dev:test-crypto": "tsx scripts/test-crypto.ts",
+    "dev:setup": "tsx scripts/dev-setup.ts",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",

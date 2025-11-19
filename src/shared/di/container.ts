@@ -14,8 +14,10 @@ export const container = new Container();
 export const SERVICE_TOKENS = {
   STORAGE: 'IStorageService',
   CRYPTO: 'ICryptoService',
+  WALLET: 'IWalletService',
   VAULT: 'IVaultService',
   KEYRING: 'IKeyringService',
+  SESSION: 'ISessionService',
   SIGNER: 'ISignerService',
   NETWORK: 'INetworkService',
   LOGGER: 'ILoggerService',

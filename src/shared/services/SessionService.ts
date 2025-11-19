@@ -21,6 +21,7 @@ export class SessionService implements ISessionService {
 
   private autoLockTimer: NodeJS.Timeout | null = null;
   private autoLockCallback: (() => void) | null = null;
+  private currentAutoLockTimeout: number = 0; // Current timer timeout in minutes
 
   constructor(private storage: IStorageService) {}
 
@@ -94,12 +95,13 @@ export class SessionService implements ISessionService {
     this.sessionState.lastActivityAt = Date.now();
     await this.saveSession();
 
-    // Reset auto-lock timer
+    // Reset auto-lock timer with current timeout
     if (this.autoLockTimer && this.autoLockCallback) {
+      const callback = this.autoLockCallback; // Store callback before stopping
+      const timeout = this.currentAutoLockTimeout; // Use current timer's timeout
       this.stopAutoLock();
-      const timeout = await this.getAutoLockTimeout();
       if (timeout > 0) {
-        this.startAutoLock(timeout, this.autoLockCallback);
+        this.startAutoLock(timeout, callback);
       }
     }
   }
@@ -115,6 +117,7 @@ export class SessionService implements ISessionService {
       return;
     }
 
+    this.currentAutoLockTimeout = timeoutMinutes;
     this.autoLockCallback = onLock;
     this.autoLockTimer = setTimeout(() => {
       if (this.sessionState.isUnlocked) {
@@ -132,6 +135,7 @@ export class SessionService implements ISessionService {
       this.autoLockTimer = null;
     }
     this.autoLockCallback = null;
+    this.currentAutoLockTimeout = 0;
   }
 
   /**
@@ -154,9 +158,10 @@ export class SessionService implements ISessionService {
 
     // Restart auto-lock with new timeout
     if (this.sessionState.isUnlocked && this.autoLockCallback) {
+      const callback = this.autoLockCallback; // Store callback before stopping
       this.stopAutoLock();
       if (timeoutMinutes > 0) {
-        this.startAutoLock(timeoutMinutes, this.autoLockCallback);
+        this.startAutoLock(timeoutMinutes, callback);
       }
     }
   }

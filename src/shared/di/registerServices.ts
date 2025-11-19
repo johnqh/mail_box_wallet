@@ -12,12 +12,14 @@ import { WalletService } from '../services/WalletService';
 import { VaultService } from '../services/VaultService';
 import { KeyringService } from '../services/KeyringService';
 import { SessionService } from '../services/SessionService';
+import { NetworkService } from '../services/NetworkService';
 import { IStorageService } from './interfaces/IStorageService';
 import { ICryptoService } from './interfaces/ICryptoService';
 import { IWalletService } from './interfaces/IWalletService';
 import { IVaultService } from './interfaces/IVaultService';
 import { IKeyringService } from './interfaces/IKeyringService';
 import { ISessionService } from './interfaces/ISessionService';
+import { INetworkService } from './interfaces/INetworkService';
 
 /**
  * Register all core services
@@ -66,6 +68,20 @@ export function registerServices(): void {
     useFactory: () => {
       const storage = container.resolve<IStorageService>(SERVICE_TOKENS.STORAGE);
       return new SessionService(storage);
+    },
+    lifecycle: 'singleton',
+  });
+
+  // Network Service - blockchain network management
+  container.register<INetworkService>(SERVICE_TOKENS.NETWORK, {
+    useFactory: () => {
+      const storage = container.resolve<IStorageService>(SERVICE_TOKENS.STORAGE);
+      const networkService = new NetworkService(storage);
+      // Initialize immediately (async operation will complete in background)
+      networkService.initialize().catch((error) => {
+        console.error('Failed to initialize NetworkService:', error);
+      });
+      return networkService;
     },
     lifecycle: 'singleton',
   });

@@ -12,6 +12,7 @@
     "test:coverage": "vitest --coverage",
     "dev:test-crypto": "tsx scripts/test-crypto.ts",
     "dev:setup": "tsx scripts/dev-setup.ts",
+    "dev:test-network": "tsx scripts/test-network.ts",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",

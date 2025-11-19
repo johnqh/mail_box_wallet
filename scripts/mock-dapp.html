@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mock dApp - Wallet Testing</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #F9FAFB;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+      color: #111827;
+    }
+
+    .subtitle {
+      color: #6B7280;
+      margin-bottom: 32px;
+    }
+
+    .section {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .section h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: #374151;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    button {
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: #3B82F6;
+      color: white;
+    }
+
+    .btn-success {
+      background: #10B981;
+      color: white;
+    }
+
+    .btn-warning {
+      background: #F59E0B;
+      color: white;
+    }
+
+    .btn-danger {
+      background: #EF4444;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #6B7280;
+      color: white;
+    }
+
+    #status {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+
+    .status-info {
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      color: #1E40AF;
+    }
+
+    .status-success {
+      background: #ECFDF5;
+      border: 1px solid #A7F3D0;
+      color: #065F46;
+    }
+
+    .status-error {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      color: #991B1B;
+    }
+
+    #results {
+      background: #F9FAFB;
+      border: 1px solid #E5E7EB;
+      border-radius: 6px;
+      padding: 16px;
+      min-height: 200px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      font-size: 13px;
+    }
+
+    .log-entry {
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .log-time {
+      color: #9CA3AF;
+      font-size: 11px;
+    }
+
+    .log-method {
+      color: #3B82F6;
+      font-weight: bold;
+    }
+
+    .log-result {
+      margin-top: 6px;
+      padding: 8px;
+      background: white;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .log-error {
+      color: #DC2626;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .info-card {
+      background: #F9FAFB;
+      padding: 12px;
+      border-radius: 6px;
+    }
+
+    .info-label {
+      font-size: 12px;
+      color: #6B7280;
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      font-size: 14px;
+      color: #111827;
+      font-weight: 500;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mock dApp</h1>
+  <p class="subtitle">Test wallet provider injection and signing operations</p>
+
+  <!-- Status -->
+  <div id="status" class="status-info">
+    Checking for wallet provider...
+  </div>
+
+  <!-- Wallet Info -->
+  <div class="section">
+    <h2>Wallet Information</h2>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-label">Provider Detected</div>
+        <div class="info-value" id="provider-detected">Checking...</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">Chain ID</div>
+        <div class="info-value" id="chain-id">-</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">Connected Account</div>
+        <div class="info-value" id="connected-account">Not connected</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">Is Identity Wallet</div>
+        <div class="info-value" id="is-identity-wallet">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connection -->
+  <div class="section">
+    <h2>Connection</h2>
+    <div class="button-grid">
+      <button class="btn-primary" onclick="connectWallet()">Connect Wallet</button>
+      <button class="btn-secondary" onclick="getAccounts()">Get Accounts</button>
+      <button class="btn-secondary" onclick="getChainId()">Get Chain ID</button>
+    </div>
+  </div>
+
+  <!-- Signing Operations -->
+  <div class="section">
+    <h2>Signing Operations</h2>
+    <div class="button-grid">
+      <button class="btn-success" onclick="testPersonalSign()">Personal Sign</button>
+      <button class="btn-success" onclick="testTypedData()">Typed Data (EIP-712)</button>
+      <button class="btn-success" onclick="testSIWE()">Sign-In with Ethereum</button>
+    </div>
+  </div>
+
+  <!-- Transaction Operations (Should Fail) -->
+  <div class="section">
+    <h2>Transaction Operations (Should Be Rejected)</h2>
+    <div class="button-grid">
+      <button class="btn-danger" onclick="testSendTransaction()">Send Transaction ❌</button>
+      <button class="btn-danger" onclick="testSignTransaction()">Sign Transaction ❌</button>
+    </div>
+  </div>
+
+  <!-- Network Operations -->
+  <div class="section">
+    <h2>Network Operations</h2>
+    <div class="button-grid">
+      <button class="btn-warning" onclick="switchToPolygon()">Switch to Polygon</button>
+      <button class="btn-warning" onclick="switchToEthereum()">Switch to Ethereum</button>
+      <button class="btn-warning" onclick="addCustomNetwork()">Add Custom Network</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="section">
+    <h2>Activity Log</h2>
+    <button class="btn-secondary" onclick="clearResults()" style="margin-bottom: 12px;">
+      Clear Log
+    </button>
+    <div id="results"></div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+    const logs = [];
+
+    function updateStatus(message, type = 'info') {
+      statusEl.textContent = message;
+      statusEl.className = `status-${type}`;
+    }
+
+    function addLog(method, result, isError = false) {
+      const time = new Date().toLocaleTimeString();
+      const entry = { time, method, result, isError };
+      logs.push(entry);
+
+      const logHtml = `
+        <div class="log-entry">
+          <div class="log-time">${time}</div>
+          <div class="log-method">${method}</div>
+          <div class="log-result ${isError ? 'log-error' : ''}">
+            ${typeof result === 'object' ? JSON.stringify(result, null, 2) : result}
+          </div>
+        </div>
+      `;
+
+      resultsEl.innerHTML = logHtml + resultsEl.innerHTML;
+    }
+
+    function clearResults() {
+      resultsEl.innerHTML = '';
+      logs.length = 0;
+    }
+
+    // Check for provider
+    function checkProvider() {
+      if (window.ethereum) {
+        document.getElementById('provider-detected').textContent = '✓ Yes';
+        document.getElementById('is-identity-wallet').textContent =
+          window.ethereum.isIdentityWallet ? '✓ Yes' : 'No';
+        document.getElementById('chain-id').textContent = window.ethereum.chainId || '-';
+        updateStatus('Wallet provider detected!', 'success');
+      } else {
+        document.getElementById('provider-detected').textContent = '✗ No';
+        updateStatus('No wallet provider detected. Make sure the extension is installed.', 'error');
+      }
+    }
+
+    // Connection
+    async function connectWallet() {
+      try {
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts',
+        });
+        document.getElementById('connected-account').textContent = accounts[0];
+        addLog('eth_requestAccounts', accounts);
+        updateStatus('Connected successfully!', 'success');
+      } catch (error) {
+        addLog('eth_requestAccounts', error.message, true);
+        updateStatus('Connection failed: ' + error.message, 'error');
+      }
+    }
+
+    async function getAccounts() {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        addLog('eth_accounts', accounts);
+      } catch (error) {
+        addLog('eth_accounts', error.message, true);
+      }
+    }
+
+    async function getChainId() {
+      try {
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        document.getElementById('chain-id').textContent = chainId;
+        addLog('eth_chainId', chainId);
+      } catch (error) {
+        addLog('eth_chainId', error.message, true);
+      }
+    }
+
+    // Signing
+    async function testPersonalSign() {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (!accounts[0]) {
+          alert('Please connect wallet first');
+          return;
+        }
+
+        const message = 'Hello from Mock dApp! This is a test message.';
+        const hexMessage = '0x' + Array.from(new TextEncoder().encode(message))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('');
+
+        const signature = await window.ethereum.request({
+          method: 'personal_sign',
+          params: [hexMessage, accounts[0]],
+        });
+
+        addLog('personal_sign', { message, signature });
+        updateStatus('Message signed successfully!', 'success');
+      } catch (error) {
+        addLog('personal_sign', error.message, true);
+        updateStatus('Signing failed: ' + error.message, 'error');
+      }
+    }
+
+    async function testTypedData() {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (!accounts[0]) {
+          alert('Please connect wallet first');
+          return;
+        }
+
+        const typedData = {
+          domain: {
+            name: 'Mock dApp',
+            version: '1',
+            chainId: 1,
+            verifyingContract: '0x0000000000000000000000000000000000000000',
+          },
+          primaryType: 'Message',
+          types: {
+            EIP712Domain: [
+              { name: 'name', type: 'string' },
+              { name: 'version', type: 'string' },
+              { name: 'chainId', type: 'uint256' },
+              { name: 'verifyingContract', type: 'address' },
+            ],
+            Message: [
+              { name: 'content', type: 'string' },
+              { name: 'timestamp', type: 'uint256' },
+            ],
+          },
+          message: {
+            content: 'Hello from typed data!',
+            timestamp: Date.now(),
+          },
+        };
+
+        const signature = await window.ethereum.request({
+          method: 'eth_signTypedData_v4',
+          params: [accounts[0], JSON.stringify(typedData)],
+        });
+
+        addLog('eth_signTypedData_v4', { typedData, signature });
+        updateStatus('Typed data signed successfully!', 'success');
+      } catch (error) {
+        addLog('eth_signTypedData_v4', error.message, true);
+        updateStatus('Signing failed: ' + error.message, 'error');
+      }
+    }
+
+    async function testSIWE() {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (!accounts[0]) {
+          alert('Please connect wallet first');
+          return;
+        }
+
+        const siweMessage = `localhost wants you to sign in with your Ethereum account:
+${accounts[0]}
+
+Sign in to Mock dApp
+
+URI: http://localhost
+Version: 1
+Chain ID: 1
+Nonce: ${Math.random().toString(36).substring(7)}
+Issued At: ${new Date().toISOString()}`;
+
+        const hexMessage = '0x' + Array.from(new TextEncoder().encode(siweMessage))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('');
+
+        const signature = await window.ethereum.request({
+          method: 'personal_sign',
+          params: [hexMessage, accounts[0]],
+        });
+
+        addLog('Sign-In with Ethereum', { message: siweMessage, signature });
+        updateStatus('SIWE signed successfully!', 'success');
+      } catch (error) {
+        addLog('Sign-In with Ethereum', error.message, true);
+        updateStatus('SIWE failed: ' + error.message, 'error');
+      }
+    }
+
+    // Transactions (should fail)
+    async function testSendTransaction() {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (!accounts[0]) {
+          alert('Please connect wallet first');
+          return;
+        }
+
+        await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: accounts[0],
+            to: '0x0000000000000000000000000000000000000000',
+            value: '0x0',
+          }],
+        });
+
+        addLog('eth_sendTransaction', 'UNEXPECTED: Transaction was sent!', true);
+        updateStatus('ERROR: This should have been rejected!', 'error');
+      } catch (error) {
+        addLog('eth_sendTransaction', 'Expected rejection: ' + error.message);
+        updateStatus('Transaction correctly rejected ✓', 'success');
+      }
+    }
+
+    async function testSignTransaction() {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (!accounts[0]) {
+          alert('Please connect wallet first');
+          return;
+        }
+
+        await window.ethereum.request({
+          method: 'eth_signTransaction',
+          params: [{
+            from: accounts[0],
+            to: '0x0000000000000000000000000000000000000000',
+            value: '0x0',
+          }],
+        });
+
+        addLog('eth_signTransaction', 'UNEXPECTED: Transaction was signed!', true);
+        updateStatus('ERROR: This should have been rejected!', 'error');
+      } catch (error) {
+        addLog('eth_signTransaction', 'Expected rejection: ' + error.message);
+        updateStatus('Transaction signing correctly rejected ✓', 'success');
+      }
+    }
+
+    // Network operations
+    async function switchToPolygon() {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x89' }],
+        });
+        addLog('wallet_switchEthereumChain', 'Switched to Polygon');
+        updateStatus('Network switched!', 'success');
+      } catch (error) {
+        addLog('wallet_switchEthereumChain', error.message, true);
+        updateStatus('Network switch failed: ' + error.message, 'error');
+      }
+    }
+
+    async function switchToEthereum() {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x1' }],
+        });
+        addLog('wallet_switchEthereumChain', 'Switched to Ethereum');
+        updateStatus('Network switched!', 'success');
+      } catch (error) {
+        addLog('wallet_switchEthereumChain', error.message, true);
+        updateStatus('Network switch failed: ' + error.message, 'error');
+      }
+    }
+
+    async function addCustomNetwork() {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: '0xa4b1',
+            chainName: 'Arbitrum One',
+            nativeCurrency: {
+              name: 'Ether',
+              symbol: 'ETH',
+              decimals: 18,
+            },
+            rpcUrls: ['https://arb1.arbitrum.io/rpc'],
+            blockExplorerUrls: ['https://arbiscan.io'],
+          }],
+        });
+        addLog('wallet_addEthereumChain', 'Added Arbitrum network');
+        updateStatus('Network added!', 'success');
+      } catch (error) {
+        addLog('wallet_addEthereumChain', error.message, true);
+        updateStatus('Add network failed: ' + error.message, 'error');
+      }
+    }
+
+    // Event listeners
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', (accounts) => {
+        addLog('EVENT: accountsChanged', accounts);
+        document.getElementById('connected-account').textContent = accounts[0] || 'Not connected';
+      });
+
+      window.ethereum.on('chainChanged', (chainId) => {
+        addLog('EVENT: chainChanged', chainId);
+        document.getElementById('chain-id').textContent = chainId;
+      });
+
+      window.ethereum.on('connect', (connectInfo) => {
+        addLog('EVENT: connect', connectInfo);
+      });
+
+      window.ethereum.on('disconnect', (error) => {
+        addLog('EVENT: disconnect', error, true);
+      });
+    }
+
+    // Check on load
+    window.addEventListener('load', () => {
+      setTimeout(checkProvider, 100);
+    });
+  </script>
+</body>
+</html>

@@ -1,122 +1,85 @@
-import React, { useState } from 'react';
-import browser from 'webextension-polyfill';
+/**
+ * Main App Component
+ *
+ * Router setup and app initialization
+ */
+
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useWalletStore } from './store/walletStore';
+import { registerServices } from '@/shared/di';
+
+// Pages
+import { Home } from './pages/Home';
+import { Unlock } from './pages/Unlock';
 import Debug from './pages/Debug';
+import {
+  Welcome,
+  CreateWallet,
+  ImportWallet,
+  SetPassword,
+  Complete,
+} from './pages/onboarding';
 
 function App() {
-  const [message, setMessage] = useState('');
-  const [showDebug, setShowDebug] = useState(false);
+  const { isInitialized, isUnlocked, checkInitialization } = useWalletStore();
+  const [loading, setLoading] = useState(true);
 
-  const handleTestMessage = async () => {
-    try {
-      const response = await browser.runtime.sendMessage({
-        type: 'TEST',
-        payload: 'Hello from popup',
-      });
-      setMessage(JSON.stringify(response));
-    } catch (error) {
-      setMessage(`Error: ${error}`);
-    }
-  };
+  useEffect(() => {
+    // Initialize DI services
+    registerServices();
 
-  if (showDebug) {
+    // Check wallet initialization status
+    checkInitialization().finally(() => {
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) {
     return (
-      <div style={{ padding: '20px', width: '600px', minHeight: '600px' }}>
-        <button
-          onClick={() => setShowDebug(false)}
-          style={{
-            marginBottom: '16px',
-            padding: '8px 12px',
-            backgroundColor: '#6B7280',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '13px',
-          }}
-        >
-          ← Back
-        </button>
-        <Debug />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-primary-600 mb-4"></div>
+          <p className="text-gray-600">Loading wallet...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '20px', width: '360px', minHeight: '600px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h1 style={{ fontSize: '24px' }}>Identity Wallet</h1>
-        <button
-          onClick={() => setShowDebug(true)}
-          style={{
-            padding: '6px 10px',
-            backgroundColor: '#F3F4F6',
-            color: '#374151',
-            border: '1px solid #D1D5DB',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px',
-          }}
-        >
-          Debug
-        </button>
-      </div>
+    <div className="w-[400px] h-[600px] overflow-hidden">
+      <BrowserRouter>
+        <Routes>
+          {/* Onboarding Routes */}
+          <Route path="/onboarding/welcome" element={<Welcome />} />
+          <Route path="/onboarding/create" element={<CreateWallet />} />
+          <Route path="/onboarding/import" element={<ImportWallet />} />
+          <Route path="/onboarding/password" element={<SetPassword />} />
+          <Route path="/onboarding/complete" element={<Complete />} />
 
-      <div style={{ marginBottom: '16px' }}>
-        <p style={{ color: '#666', fontSize: '14px' }}>
-          Secure identity-focused crypto wallet
-        </p>
-      </div>
+          {/* Main App Routes */}
+          <Route path="/home" element={isUnlocked ? <Home /> : <Navigate to="/unlock" />} />
+          <Route path="/unlock" element={<Unlock />} />
+          <Route path="/debug" element={<Debug />} />
 
-      <div style={{ marginTop: '20px' }}>
-        <button
-          onClick={handleTestMessage}
-          style={{
-            padding: '10px 16px',
-            backgroundColor: '#4F46E5',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '14px',
-          }}
-        >
-          Test Background Connection
-        </button>
+          {/* Default Route */}
+          <Route
+            path="/"
+            element={
+              !isInitialized ? (
+                <Navigate to="/onboarding/welcome" />
+              ) : isUnlocked ? (
+                <Navigate to="/home" />
+              ) : (
+                <Navigate to="/unlock" />
+              )
+            }
+          />
 
-        {message && (
-          <div
-            style={{
-              marginTop: '12px',
-              padding: '12px',
-              backgroundColor: '#F3F4F6',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontFamily: 'monospace',
-            }}
-          >
-            {message}
-          </div>
-        )}
-      </div>
-
-      <div
-        style={{
-          marginTop: '24px',
-          padding: '12px',
-          backgroundColor: '#EFF6FF',
-          border: '1px solid #BFDBFE',
-          borderRadius: '6px',
-        }}
-      >
-        <h3 style={{ fontSize: '14px', marginBottom: '8px' }}>Phase 1: Development Setup</h3>
-        <ul style={{ fontSize: '12px', color: '#1E40AF', paddingLeft: '20px' }}>
-          <li>✅ Vite + React + TypeScript</li>
-          <li>✅ Extension manifest configured</li>
-          <li>✅ Background worker running</li>
-          <li>✅ Popup UI displaying</li>
-          <li>⏳ Debug tools (next step)</li>
-        </ul>
-      </div>
+          {/* Catch all */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }

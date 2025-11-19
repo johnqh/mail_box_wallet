@@ -40,7 +40,11 @@ A secure, identity-focused crypto wallet browser extension that supports EVM cha
 - **Language**: TypeScript
 - **UI Framework**: React 18+
 - **Build Tool**: Vite with [@crxjs/vite-plugin](https://crxjs.dev/vite-plugin)
-- **Styling**: TailwindCSS + headlessUI for components
+- **Styling**: TailwindCSS + @sudobility/design_system
+- **UI Components**: @sudobility/components (reusable component library)
+- **Dependency Injection**:
+  - @sudobility/di (DI interfaces and contracts)
+  - @sudobility/di_web (concrete implementations for browser/web)
 - **State Management**: Zustand (lightweight, no boilerplate)
 - **Extension API**: webextension-polyfill (cross-browser compatibility)
 
@@ -439,7 +443,11 @@ mail_box_wallet/
 │   │   ├── crypto/           # Crypto utilities
 │   │   ├── utils/            # Helper functions
 │   │   ├── logger/           # Debug logger
-│   │   └── messaging/        # Message types & helpers
+│   │   ├── messaging/        # Message types & helpers
+│   │   ├── di/               # Dependency Injection
+│   │   │   ├── interfaces/   # DI interfaces (using @sudobility/di)
+│   │   │   └── providers/    # DI providers configuration
+│   │   └── services/         # Service implementations (using @sudobility/di_web)
 │   └── manifest.json         # Extension manifest (V3)
 ├── public/
 │   ├── icons/                # Extension icons
@@ -461,6 +469,201 @@ mail_box_wallet/
 ├── tsconfig.json
 ├── vite.config.ts
 └── README.md
+```
+
+---
+
+### 7. Dependency Injection Architecture
+
+#### 7.1 Overview
+
+The wallet uses **@sudobility/di** for dependency injection to:
+- Decouple business logic from implementation details
+- Enable easy testing with mock implementations
+- Support different environments (extension, web, mobile in future)
+- Improve code reusability and maintainability
+
+#### 7.2 DI Layers
+
+**Layer 1: Interfaces (@sudobility/di)**
+- Define contracts for services (IStorageService, INetworkService, etc.)
+- Platform-agnostic interface definitions
+- No concrete implementations
+
+**Layer 2: Implementations (@sudobility/di_web)**
+- Concrete implementations for browser/web environment
+- Extension-specific implementations (chrome.storage, etc.)
+- Can be swapped for testing or different platforms
+
+**Layer 3: Providers**
+- Configure and register services
+- Set up dependency graph
+- Manage service lifecycle
+
+#### 7.3 Service Architecture
+
+```typescript
+// src/shared/di/interfaces/IStorageService.ts
+import { injectable } from '@sudobility/di';
+
+@injectable()
+export interface IStorageService {
+  get<T>(key: string): Promise<T | null>;
+  set<T>(key: string, value: T): Promise<void>;
+  remove(key: string): Promise<void>;
+  clear(): Promise<void>;
+}
+
+// src/shared/services/ChromeStorageService.ts
+import { StorageService } from '@sudobility/di_web';
+import { IStorageService } from '@/shared/di/interfaces/IStorageService';
+
+export class ChromeStorageService extends StorageService implements IStorageService {
+  // Extension-specific implementation using chrome.storage.local
+}
+
+// src/shared/di/providers/index.ts
+import { Container } from '@sudobility/di';
+import { ChromeStorageService } from '@/shared/services/ChromeStorageService';
+
+export const container = new Container();
+container.register('IStorageService', ChromeStorageService);
+```
+
+#### 7.4 Key Services
+
+Services to be implemented with DI:
+
+1. **IStorageService** - chrome.storage.local abstraction
+2. **INetworkService** - RPC calls and network management
+3. **ICryptoService** - Encryption/decryption operations
+4. **IKeyringService** - Key derivation and management
+5. **ISignerService** - Signing operations
+6. **IVaultService** - Vault encryption and storage
+7. **ILoggerService** - Logging (already implemented, will migrate to DI)
+
+#### 7.5 Benefits
+
+**Testability:**
+```typescript
+// In tests, inject mock implementations
+const mockStorage = new MockStorageService();
+container.register('IStorageService', () => mockStorage);
+
+// Test with controlled environment
+```
+
+**Flexibility:**
+```typescript
+// Different implementations for different contexts
+// Extension context: ChromeStorageService
+// Test context: MockStorageService
+// Future mobile: AsyncStorageService
+```
+
+**Type Safety:**
+```typescript
+// TypeScript ensures interface compliance
+const storage = container.resolve<IStorageService>('IStorageService');
+// storage is fully typed with autocomplete
+```
+
+---
+
+### 8. UI Component Architecture
+
+#### 8.1 Design System (@sudobility/design_system)
+
+Use design system for consistent styling across the wallet:
+
+```typescript
+import { theme, variants } from '@sudobility/design_system';
+
+// Use design tokens
+const Button = styled.button`
+  background: ${theme.colors.primary};
+  padding: ${theme.spacing.md};
+  border-radius: ${theme.radii.md};
+`;
+
+// Use variants
+<Button variant={variants.button.primary}>Connect</Button>
+```
+
+**Key Design Tokens:**
+- Colors: primary, secondary, success, warning, danger, neutral
+- Spacing: xs, sm, md, lg, xl
+- Typography: heading, body, caption, code
+- Radii: sm, md, lg, full
+- Shadows: sm, md, lg
+
+#### 8.2 Reusable Components (@sudobility/components)
+
+Prefer using components from @sudobility/components:
+
+**Available Components:**
+- `Button` - Primary, secondary, danger variants
+- `Input` - Text, password, number inputs
+- `Card` - Container component
+- `Modal` - Dialog/modal overlays
+- `List` - Scrollable lists
+- `Badge` - Status indicators
+- `Spinner` - Loading states
+- `Alert` - Notifications
+- `Dropdown` - Select menus
+- `Checkbox`, `Radio`, `Switch` - Form controls
+
+**Example Usage:**
+```typescript
+import { Button, Card, Input, Modal } from '@sudobility/components';
+import { variants } from '@sudobility/design_system';
+
+function AccountSetup() {
+  return (
+    <Card>
+      <Input
+        placeholder="Account name"
+        variant={variants.input.default}
+      />
+      <Button
+        variant={variants.button.primary}
+        onClick={handleCreate}
+      >
+        Create Account
+      </Button>
+    </Card>
+  );
+}
+```
+
+**Custom Components:**
+Only create custom components when:
+- The component is wallet-specific (SeedPhraseDisplay, AccountList, etc.)
+- @sudobility/components doesn't have the needed component
+- Specific customization is required
+
+**Component Guidelines:**
+- Use @sudobility/components for generic UI (buttons, inputs, cards)
+- Use @sudobility/design_system variants for styling
+- Create custom components in `src/popup/components/` for wallet-specific UI
+- All custom components should use design system tokens
+
+#### 8.3 Component Structure
+
+```
+src/popup/
+├── components/           # Wallet-specific components
+│   ├── SeedPhraseDisplay.tsx
+│   ├── AccountCard.tsx
+│   ├── NetworkSelector.tsx
+│   └── SigningRequest.tsx
+├── pages/               # Page components
+│   ├── Onboarding/
+│   │   ├── CreateWallet.tsx      # Uses @sudobility/components
+│   │   ├── ImportWallet.tsx
+│   │   └── SeedPhraseConfirm.tsx
+│   └── Home/
+│       └── Dashboard.tsx
 ```
 
 ---
@@ -725,17 +928,41 @@ setup().catch(console.error);
 
 ### Phase 2: Cryptography & Vault (Week 2)
 
-**Goal**: Implement secure storage with comprehensive tests
+**Goal**: Implement secure storage with DI architecture and comprehensive tests
 
 **Tasks**:
-1. Implement PBKDF2 key derivation
-2. Implement AES-256-GCM encryption/decryption
-3. Create Vault class
-4. Implement seed phrase generation (12/24 words)
-5. Storage layer for chrome.storage.local
-6. **Comprehensive unit tests (>90% coverage)**
-7. **CLI test script for crypto operations**
-8. **Add crypto debug commands to debug panel**
+1. Install @sudobility/di, @sudobility/di_web packages
+2. Set up DI container and service registration
+3. Define ICryptoService and IStorageService interfaces
+4. Implement PBKDF2 key derivation (in CryptoService)
+5. Implement AES-256-GCM encryption/decryption
+6. Create IVaultService interface and VaultService implementation
+7. Implement seed phrase generation (12/24 words)
+8. Implement ChromeStorageService (using @sudobility/di_web)
+9. **Comprehensive unit tests with mocks (>90% coverage)**
+10. **CLI test script for crypto operations**
+11. **Add crypto debug commands to debug panel**
+
+**DI Architecture**:
+```typescript
+// Define interfaces
+interface ICryptoService {
+  encrypt(data: string, key: string): Promise<EncryptedData>;
+  decrypt(encrypted: EncryptedData, key: string): Promise<string>;
+  deriveKey(password: string, salt: string): Promise<string>;
+}
+
+interface IVaultService {
+  create(password: string, seedPhrase: string): Promise<void>;
+  unlock(password: string): Promise<string>;
+  lock(): Promise<void>;
+}
+
+// Register services
+container.register('ICryptoService', CryptoService);
+container.register('IVaultService', VaultService);
+container.register('IStorageService', ChromeStorageService);
+```
 
 **Testing & Debugging**:
 ```bash
@@ -1041,15 +1268,22 @@ test('dApp can connect and sign', async ({ page, context }) => {
 
 ### Phase 7: Popup UI - Onboarding (Week 7)
 
-**Goal**: Polished onboarding with Storybook components
+**Goal**: Polished onboarding using @sudobility components and design system
 
 **Tasks**:
 1. Design onboarding flow
-2. Implement all onboarding screens
-3. Form validation
-4. **Storybook for all components**
-5. **Accessibility testing**
-6. **E2E test for full onboarding**
+2. Implement all onboarding screens using @sudobility/components
+3. Apply @sudobility/design_system variants for consistent styling
+4. Form validation
+5. **Storybook for all components**
+6. **Accessibility testing**
+7. **E2E test for full onboarding**
+
+**Component Usage**:
+- Use `Button`, `Input`, `Card` from @sudobility/components
+- Use `variants.button.primary`, `variants.input.default` from @sudobility/design_system
+- Create custom wallet-specific components (SeedPhraseDisplay, etc.) in `src/popup/components/`
+- Apply design tokens (`theme.colors`, `theme.spacing`) for custom styling
 
 **Testing & Debugging**:
 ```bash
@@ -1110,12 +1344,22 @@ Each subsequent phase follows the same developer-friendly approach:
 
 **For Every Phase**:
 1. **Unit tests first** (TDD where possible)
-2. **Storybook stories** for UI components
-3. **Debug panel features** for manual testing
-4. **CLI scripts** for automated testing
-5. **E2E tests** for critical flows
-6. **Mock data** for consistent testing
-7. **Documentation** in code comments
+2. **Dependency Injection** for all services (using @sudobility/di)
+3. **Storybook stories** for UI components
+4. **Use @sudobility/components** for generic UI elements
+5. **Apply @sudobility/design_system** variants for styling
+6. **Debug panel features** for manual testing
+7. **CLI scripts** for automated testing
+8. **E2E tests** for critical flows
+9. **Mock data** for consistent testing
+10. **Documentation** in code comments
+
+**Component & Architecture Guidelines**:
+- All IO operations through DI interfaces (IStorageService, INetworkService, etc.)
+- Concrete implementations using @sudobility/di_web
+- UI components from @sudobility/components where possible
+- Custom components only for wallet-specific features
+- Design tokens from @sudobility/design_system for all styling
 
 **Example Phase Checklist**:
 ```markdown

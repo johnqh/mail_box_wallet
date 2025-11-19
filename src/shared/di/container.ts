@@ -2,10 +2,30 @@
  * Dependency Injection Container
  *
  * Central container for registering and resolving services.
- * Uses @sudobility/di for dependency injection.
  */
 
-import { Container } from '@sudobility/di';
+/**
+ * Simple DI Container implementation
+ */
+class Container {
+  private services = new Map<string, any>();
+
+  register<T>(token: string, service: T): void {
+    this.services.set(token, service);
+  }
+
+  resolve<T>(token: string): T {
+    const service = this.services.get(token);
+    if (!service) {
+      throw new Error(`Service not found for token: ${token}`);
+    }
+    return service as T;
+  }
+
+  has(token: string): boolean {
+    return this.services.has(token);
+  }
+}
 
 // Create singleton container instance
 export const container = new Container();

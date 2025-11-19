@@ -47,8 +47,8 @@ export const useWalletStore = create<WalletState>((set, get) => ({
       const vaultService = getService<IVaultService>(SERVICE_TOKENS.VAULT);
       const sessionService = getService<ISessionService>(SERVICE_TOKENS.SESSION);
 
-      const hasVault = await vaultService.hasVault();
-      const session = await sessionService.getSession();
+      const hasVault = await vaultService.exists();
+      const session = await sessionService.getSessionState();
 
       set({
         isInitialized: hasVault,

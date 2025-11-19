@@ -6,12 +6,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import browser from 'webextension-polyfill';
 import { useWalletStore } from './store/walletStore';
 import { registerServices } from '@/shared/di';
 
 // Pages
 import { Home } from './pages/Home';
 import { Unlock } from './pages/Unlock';
+import { ConnectApproval } from './pages/ConnectApproval';
 import Debug from './pages/Debug';
 import {
   Welcome,
@@ -24,13 +26,29 @@ import {
 function App() {
   const { isInitialized, isUnlocked, checkInitialization } = useWalletStore();
   const [loading, setLoading] = useState(true);
+  const [hasPendingRequest, setHasPendingRequest] = useState(false);
 
   useEffect(() => {
     // Initialize DI services
     registerServices();
 
+    // Check for pending requests
+    async function checkForPendingRequests() {
+      try {
+        const response = await browser.runtime.sendMessage({
+          type: 'GET_PENDING_REQUEST',
+        });
+        setHasPendingRequest(!!response.request);
+      } catch (error) {
+        console.error('Failed to check for pending requests:', error);
+      }
+    }
+
     // Check wallet initialization status
-    checkInitialization().finally(() => {
+    Promise.all([
+      checkInitialization(),
+      checkForPendingRequests(),
+    ]).finally(() => {
       setLoading(false);
     });
   }, []);
@@ -60,6 +78,7 @@ function App() {
           {/* Main App Routes */}
           <Route path="/home" element={isUnlocked ? <Home /> : <Navigate to="/unlock" />} />
           <Route path="/unlock" element={<Unlock />} />
+          <Route path="/connect-approval" element={<ConnectApproval />} />
           <Route path="/debug" element={<Debug />} />
 
           {/* Default Route */}
@@ -68,6 +87,8 @@ function App() {
             element={
               !isInitialized ? (
                 <Navigate to="/onboarding/welcome" />
+              ) : hasPendingRequest ? (
+                <Navigate to="/connect-approval" />
               ) : isUnlocked ? (
                 <Navigate to="/home" />
               ) : (

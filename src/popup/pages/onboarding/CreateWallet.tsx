@@ -27,7 +27,7 @@ export function CreateWallet() {
     try {
       setLoading(true);
       const walletService = getService<IWalletService>(SERVICE_TOKENS.WALLET);
-      const mnemonic = walletService.generateMnemonic();
+      const mnemonic = await walletService.generateSeedPhrase();
       setSeedPhrase(mnemonic);
     } catch (error) {
       console.error('Failed to generate seed phrase:', error);

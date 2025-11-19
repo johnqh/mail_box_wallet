@@ -13,6 +13,7 @@ import browser from 'webextension-polyfill';
 import { registerServices } from '../shared/di';
 import { MessageHandler } from './message-handler';
 import { MessageType } from '../shared/types/messaging';
+import { pendingRequestsManager } from './pending-requests';
 
 console.log('✓ Background service worker starting...');
 
@@ -22,7 +23,48 @@ registerServices();
 // Create message handler
 const messageHandler = new MessageHandler();
 
+// Set approval callback
+messageHandler.setApprovalCallback(openApprovalPopup);
+
 console.log('✓ Services initialized');
+
+// Track open popup window
+let popupWindowId: number | null = null;
+
+/**
+ * Open approval popup
+ */
+async function openApprovalPopup(): Promise<void> {
+  // Check if popup is already open
+  if (popupWindowId !== null) {
+    try {
+      await browser.windows.get(popupWindowId);
+      // Window exists, focus it
+      await browser.windows.update(popupWindowId, { focused: true });
+      return;
+    } catch {
+      // Window doesn't exist anymore
+      popupWindowId = null;
+    }
+  }
+
+  // Create new popup window
+  const popup = await browser.windows.create({
+    url: browser.runtime.getURL('src/popup/index.html'),
+    type: 'popup',
+    width: 400,
+    height: 600,
+  });
+
+  popupWindowId = popup.id || null;
+}
+
+// Listen for window close events
+browser.windows.onRemoved.addListener((windowId) => {
+  if (windowId === popupWindowId) {
+    popupWindowId = null;
+  }
+});
 
 // Listen for messages from popup and content scripts
 browser.runtime.onMessage.addListener(async (message, sender) => {
@@ -42,8 +84,37 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
     return response;
   }
 
-  // Handle other message types
-  // TODO: Add handlers for popup messages in Phase 7
+  // Handle popup messages
+  if (type === 'GET_PENDING_REQUEST') {
+    // Get the first pending request
+    const request = pendingRequestsManager.getFirstRequest();
+    return { request };
+  }
+
+  if (type === 'APPROVE_REQUEST') {
+    const { requestId } = payload;
+    const request = pendingRequestsManager.getRequest(requestId);
+    if (request) {
+      request.resolve(true);
+      pendingRequestsManager.removeRequest(requestId);
+      return { success: true };
+    }
+    return { success: false, error: 'Request not found' };
+  }
+
+  if (type === 'REJECT_REQUEST') {
+    const { requestId } = payload;
+    const request = pendingRequestsManager.getRequest(requestId);
+    if (request) {
+      request.reject({
+        code: 4001,
+        message: 'User rejected the request',
+      });
+      pendingRequestsManager.removeRequest(requestId);
+      return { success: true };
+    }
+    return { success: false, error: 'Request not found' };
+  }
 
   // Default response
   return { success: true };

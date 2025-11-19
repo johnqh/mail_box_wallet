@@ -6,6 +6,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import browser from 'webextension-polyfill';
 import { Button, Input, Label, Card, CardContent } from '@sudobility/components';
 import { Layout } from '../components';
 import { useWalletStore } from '../store/walletStore';
@@ -31,8 +32,23 @@ export function Unlock() {
 
       await unlockWallet(password);
 
-      // Navigate to home
-      navigate('/home');
+      // Check if there's a pending request
+      try {
+        const response = await browser.runtime.sendMessage({
+          type: 'GET_PENDING_REQUEST',
+        });
+
+        if (response.request) {
+          // Navigate to approval page
+          navigate('/connect-approval');
+        } else {
+          // Navigate to home
+          navigate('/home');
+        }
+      } catch {
+        // If we can't check for pending requests, just go home
+        navigate('/home');
+      }
     } catch (err) {
       console.error('Failed to unlock wallet:', err);
       setError('Incorrect password. Please try again.');

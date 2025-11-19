@@ -27,72 +27,42 @@ import { SignerService } from '../services/SignerService';
  * Register all core services
  */
 export function registerServices(): void {
+  // Skip if already registered
+  if (container.has(SERVICE_TOKENS.STORAGE)) {
+    return;
+  }
+
   // Storage Service - using Chrome extension storage
-  container.register<IStorageService>(SERVICE_TOKENS.STORAGE, {
-    useFactory: () => new ChromeStorageService(),
-    lifecycle: 'singleton',
-  });
+  container.register<IStorageService>(SERVICE_TOKENS.STORAGE, new ChromeStorageService());
 
   // Crypto Service - encryption/decryption and key derivation
-  container.register<ICryptoService>(SERVICE_TOKENS.CRYPTO, {
-    useFactory: () => new CryptoService(),
-    lifecycle: 'singleton',
-  });
+  container.register<ICryptoService>(SERVICE_TOKENS.CRYPTO, new CryptoService());
 
   // Wallet Service - HD wallet operations (BIP-39/BIP-44)
-  container.register<IWalletService>(SERVICE_TOKENS.WALLET, {
-    useFactory: () => new WalletService(),
-    lifecycle: 'singleton',
-  });
+  container.register<IWalletService>(SERVICE_TOKENS.WALLET, new WalletService());
 
   // Vault Service - secure storage of seed phrase
-  container.register<IVaultService>(SERVICE_TOKENS.VAULT, {
-    useFactory: () => {
-      const crypto = container.resolve<ICryptoService>(SERVICE_TOKENS.CRYPTO);
-      const storage = container.resolve<IStorageService>(SERVICE_TOKENS.STORAGE);
-      return new VaultService(crypto, storage);
-    },
-    lifecycle: 'singleton',
-  });
+  const crypto = container.resolve<ICryptoService>(SERVICE_TOKENS.CRYPTO);
+  const storage = container.resolve<IStorageService>(SERVICE_TOKENS.STORAGE);
+  container.register<IVaultService>(SERVICE_TOKENS.VAULT, new VaultService(crypto, storage));
 
   // Keyring Service - account management
-  container.register<IKeyringService>(SERVICE_TOKENS.KEYRING, {
-    useFactory: () => {
-      const wallet = container.resolve<IWalletService>(SERVICE_TOKENS.WALLET);
-      const storage = container.resolve<IStorageService>(SERVICE_TOKENS.STORAGE);
-      return new KeyringService(wallet, storage);
-    },
-    lifecycle: 'singleton',
-  });
+  const wallet = container.resolve<IWalletService>(SERVICE_TOKENS.WALLET);
+  container.register<IKeyringService>(SERVICE_TOKENS.KEYRING, new KeyringService(wallet, storage));
 
   // Session Service - session state and auto-lock
-  container.register<ISessionService>(SERVICE_TOKENS.SESSION, {
-    useFactory: () => {
-      const storage = container.resolve<IStorageService>(SERVICE_TOKENS.STORAGE);
-      return new SessionService(storage);
-    },
-    lifecycle: 'singleton',
-  });
+  container.register<ISessionService>(SERVICE_TOKENS.SESSION, new SessionService(storage));
 
   // Network Service - blockchain network management
-  container.register<INetworkService>(SERVICE_TOKENS.NETWORK, {
-    useFactory: () => {
-      const storage = container.resolve<IStorageService>(SERVICE_TOKENS.STORAGE);
-      const networkService = new NetworkService(storage);
-      // Initialize immediately (async operation will complete in background)
-      networkService.initialize().catch((error) => {
-        console.error('Failed to initialize NetworkService:', error);
-      });
-      return networkService;
-    },
-    lifecycle: 'singleton',
+  const networkService = new NetworkService(storage);
+  // Initialize immediately (async operation will complete in background)
+  networkService.initialize().catch((error) => {
+    console.error('Failed to initialize NetworkService:', error);
   });
+  container.register<INetworkService>(SERVICE_TOKENS.NETWORK, networkService);
 
   // Signer Service - message signing (EIP-191, EIP-712, SIWE)
-  container.register<ISignerService>(SERVICE_TOKENS.SIGNER, {
-    useFactory: () => new SignerService(),
-    lifecycle: 'singleton',
-  });
+  container.register<ISignerService>(SERVICE_TOKENS.SIGNER, new SignerService());
 
   console.log('✓ Core services registered in DI container');
 }

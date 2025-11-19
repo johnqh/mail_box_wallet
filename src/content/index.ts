@@ -24,7 +24,8 @@ console.log('✓ Content script loaded on:', window.location.href);
 function injectInpageScript() {
   try {
     const script = document.createElement('script');
-    script.src = browser.runtime.getURL('src/inpage/index.ts');
+    // Use standalone JS bundle (no imports/modules)
+    script.src = browser.runtime.getURL('src/inpage/index-standalone.js');
     script.onload = () => {
       console.log('✓ Inpage script injected');
       script.remove(); // Clean up

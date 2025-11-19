@@ -7,6 +7,7 @@
 import { RequestArguments, ProviderRpcErrorCode } from '../shared/types/eip1193';
 import { IKeyringService, ISignerService, INetworkService, ISessionService } from '../shared/di';
 import { getService, SERVICE_TOKENS } from '../shared/di';
+import { pendingRequestsManager } from './pending-requests';
 
 /**
  * Method categories for allow/blocklist
@@ -59,12 +60,22 @@ export class MessageHandler {
   // Track connected sites
   private connectedSites = new Map<string, boolean>();
 
+  // Callback to trigger popup opening
+  private onRequestApproval?: () => Promise<void>;
+
   constructor() {
     // Resolve services from DI container
     this.keyringService = getService<IKeyringService>(SERVICE_TOKENS.KEYRING);
     this.signerService = getService<ISignerService>(SERVICE_TOKENS.SIGNER);
     this.networkService = getService<INetworkService>(SERVICE_TOKENS.NETWORK);
     this.sessionService = getService<ISessionService>(SERVICE_TOKENS.SESSION);
+  }
+
+  /**
+   * Set callback for opening approval popup
+   */
+  setApprovalCallback(callback: () => Promise<void>): void {
+    this.onRequestApproval = callback;
   }
 
   /**
@@ -182,24 +193,82 @@ export class MessageHandler {
    * Handle eth_requestAccounts - request permission to access accounts
    */
   private async handleRequestAccounts(origin?: string): Promise<string[]> {
-    // Check if session is locked
-    const session = await this.sessionService.getSession();
-    if (!session.isUnlocked) {
-      throw {
-        code: ProviderRpcErrorCode.UNAUTHORIZED,
-        message: 'Wallet is locked. Please unlock to continue.',
-      };
+    // Check if session is locked or site not connected
+    const session = await this.sessionService.getSessionState();
+    const isConnected = origin ? this.connectedSites.get(origin) : false;
+
+    // If locked or not connected, require user approval
+    if (!session.isUnlocked || !isConnected) {
+      // Create a promise that will be resolved when user approves
+      return new Promise((resolve, reject) => {
+        // Generate request ID
+        const requestId = `connect_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+        // Store pending request
+        pendingRequestsManager.addRequest({
+          id: requestId,
+          type: 'connect',
+          origin: origin || 'unknown',
+          timestamp: Date.now(),
+          params: {},
+          resolve: async (approved: boolean) => {
+            if (approved) {
+              try {
+                // Mark site as connected
+                if (origin) {
+                  this.connectedSites.set(origin, true);
+                }
+
+                // Get current account
+                const accounts = await this.keyringService.getAccounts();
+                if (accounts.length === 0) {
+                  reject({
+                    code: ProviderRpcErrorCode.UNAUTHORIZED,
+                    message: 'No accounts available',
+                  });
+                  return;
+                }
+
+                resolve([accounts[0].address]);
+              } catch (error) {
+                reject({
+                  code: ProviderRpcErrorCode.INTERNAL_ERROR,
+                  message: error instanceof Error ? error.message : 'Failed to get accounts',
+                });
+              }
+            } else {
+              reject({
+                code: ProviderRpcErrorCode.UNAUTHORIZED,
+                message: 'User rejected the request',
+              });
+            }
+          },
+          reject: (error: any) => {
+            reject(error);
+          },
+        });
+
+        // Trigger popup opening
+        if (this.onRequestApproval) {
+          this.onRequestApproval().catch((error) => {
+            console.error('Failed to open approval popup:', error);
+            pendingRequestsManager.removeRequest(requestId);
+            reject({
+              code: ProviderRpcErrorCode.INTERNAL_ERROR,
+              message: 'Failed to open approval popup',
+            });
+          });
+        } else {
+          pendingRequestsManager.removeRequest(requestId);
+          reject({
+            code: ProviderRpcErrorCode.INTERNAL_ERROR,
+            message: 'Approval callback not set',
+          });
+        }
+      });
     }
 
-    // TODO: Show connection approval popup in Phase 7
-    // For now, auto-approve for development
-
-    // Mark site as connected
-    if (origin) {
-      this.connectedSites.set(origin, true);
-    }
-
-    // Get current account
+    // If already unlocked and connected, return accounts immediately
     const accounts = await this.keyringService.getAccounts();
     if (accounts.length === 0) {
       throw {
@@ -221,7 +290,7 @@ export class MessageHandler {
     }
 
     // Check if session is locked
-    const session = await this.sessionService.getSession();
+    const session = await this.sessionService.getSessionState();
     if (!session.isUnlocked) {
       return []; // Return empty array if locked
     }

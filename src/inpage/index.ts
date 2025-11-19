@@ -13,7 +13,7 @@ const provider = {
   isMetaMask: false,
   chainId: '0x1', // Ethereum mainnet
 
-  request: async (args: { method: string; params?: unknown[] }) => {
+  request: async (args) => {
     console.log('Provider request:', args);
 
     return new Promise((resolve, reject) => {
@@ -27,7 +27,7 @@ const provider = {
       );
 
       // Listen for response
-      const handleResponse = (event: MessageEvent) => {
+      const handleResponse = (event) => {
         if (event.source !== window) return;
 
         const { type, payload } = event.data;
@@ -48,11 +48,11 @@ const provider = {
     });
   },
 
-  on: (event: string, handler: (...args: unknown[]) => void) => {
+  on: (event, handler) => {
     console.log('Provider event listener added:', event);
   },
 
-  removeListener: (event: string, handler: (...args: unknown[]) => void) => {
+  removeListener: (event, handler) => {
     console.log('Provider event listener removed:', event);
   },
 };

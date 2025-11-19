@@ -16,7 +16,14 @@ function injectInpageScript() {
   try {
     const script = document.createElement('script');
     script.src = browser.runtime.getURL('src/inpage/index.ts');
-    script.type = 'module';
+    // Don't use type="module" - load as regular script
+    script.onload = () => {
+      console.log('Inpage script loaded successfully');
+      script.remove(); // Clean up
+    };
+    script.onerror = (error) => {
+      console.error('Failed to load inpage script:', error);
+    };
     (document.head || document.documentElement).appendChild(script);
     console.log('Inpage script injected');
   } catch (error) {

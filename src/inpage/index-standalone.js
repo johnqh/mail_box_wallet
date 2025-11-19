@@ -10,9 +10,9 @@
 
   // Message types and targets (inlined from shared/types)
   const MessageTarget = {
-    INPAGE: 'INPAGE',
-    CONTENT_SCRIPT: 'CONTENT_SCRIPT',
-    BACKGROUND: 'BACKGROUND',
+    INPAGE: 'IDENTITY_WALLET_INPAGE',
+    CONTENT_SCRIPT: 'IDENTITY_WALLET_CONTENT',
+    BACKGROUND: 'IDENTITY_WALLET_BACKGROUND',
   };
 
   const MessageType = {

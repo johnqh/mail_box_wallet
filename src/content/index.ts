@@ -62,11 +62,23 @@ window.addEventListener('message', async (event: MessageEvent) => {
 
   const message = event.data as Message;
 
+  console.log('Content script received message:', message);
+
   // Verify message is for content script
-  if (!message || message.target !== MessageTarget.CONTENT_SCRIPT) return;
+  if (!message || message.target !== MessageTarget.CONTENT_SCRIPT) {
+    console.log('Message not for content script, ignoring');
+    return;
+  }
+
+  console.log('Message is for content script, type:', message.type);
 
   // Only handle provider requests from inpage
-  if (message.type !== MessageType.PROVIDER_REQUEST) return;
+  if (message.type !== MessageType.PROVIDER_REQUEST) {
+    console.log('Not a provider request, ignoring');
+    return;
+  }
+
+  console.log('Handling provider request:', message);
 
   const request = message as ProviderRequestMessage;
 

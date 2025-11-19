@@ -309,7 +309,8 @@ export class MessageHandler {
    */
   private async handleChainId(): Promise<string> {
     const network = await this.networkService.getCurrentNetwork();
-    return `0x${network.chainId.toString(16)}`;
+    // chainId is already stored as hex string (e.g., '0x1')
+    return network.chainId;
   }
 
   /**

@@ -58,6 +58,14 @@ export class SessionService implements ISessionService {
    * Get current session state
    */
   async getSessionState(): Promise<SessionState> {
+    // If in-memory state shows as locked, try loading from storage
+    // This handles the case where popup unlocked but background session wasn't updated
+    if (!this.sessionState.isUnlocked) {
+      const storedSession = await this.storage.get<SessionState>(SESSION_STORAGE_KEY);
+      if (storedSession && storedSession.isUnlocked) {
+        this.sessionState = storedSession;
+      }
+    }
     return { ...this.sessionState };
   }
 

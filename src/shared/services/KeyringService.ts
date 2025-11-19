@@ -105,6 +105,14 @@ export class KeyringService implements IKeyringService {
    * Get all accounts
    */
   async getAccounts(): Promise<Account[]> {
+    // If accounts are empty, try loading from storage
+    // This handles the case where popup unlocked but background keyring wasn't initialized
+    if (this.accounts.length === 0) {
+      const storedAccounts = await this.storage.get<Account[]>(ACCOUNTS_STORAGE_KEY);
+      if (storedAccounts && storedAccounts.length > 0) {
+        return [...storedAccounts];
+      }
+    }
     return [...this.accounts];
   }
 

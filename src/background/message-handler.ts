@@ -219,18 +219,29 @@ export class MessageHandler {
                   this.connectedSites.set(origin, true);
                 }
 
+                // Check if session is now unlocked (user may have unlocked during approval)
+                const currentSession = await this.sessionService.getSessionState();
+                if (!currentSession.isUnlocked) {
+                  reject({
+                    code: ProviderRpcErrorCode.UNAUTHORIZED,
+                    message: 'Wallet is locked. Please unlock to continue.',
+                  });
+                  return;
+                }
+
                 // Get current account
                 const accounts = await this.keyringService.getAccounts();
                 if (accounts.length === 0) {
                   reject({
                     code: ProviderRpcErrorCode.UNAUTHORIZED,
-                    message: 'No accounts available',
+                    message: 'No accounts available. Please create or import a wallet first.',
                   });
                   return;
                 }
 
                 resolve([accounts[0].address]);
               } catch (error) {
+                console.error('Error getting accounts after approval:', error);
                 reject({
                   code: ProviderRpcErrorCode.INTERNAL_ERROR,
                   message: error instanceof Error ? error.message : 'Failed to get accounts',

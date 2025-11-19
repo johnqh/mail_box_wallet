@@ -1295,10 +1295,10 @@ test('dApp can connect and sign', async ({ page, context }) => {
 7. ⏭️ E2E tests with Playwright (deferred to Phase 8+)
 
 **Component Usage**:
-- Use `Button`, `Input`, `Card` from @sudobility/components
-- Use `variants.button.primary`, `variants.input.default` from @sudobility/design_system
-- Create custom wallet-specific components (SeedPhraseDisplay, etc.) in `src/popup/components/`
-- Apply design tokens (`theme.colors`, `theme.spacing`) for custom styling
+- ✅ Using `Button`, `Input`, `Label`, `Card`, `CardContent` from @sudobility/components@2.0.30
+- ⏭️ @sudobility/design_system not available (404) - design is included within @sudobility/components
+- ✅ Created custom Layout component specific to popup UI in `src/popup/components/`
+- ✅ Applied Tailwind CSS classes for custom styling with primary color palette
 
 **Testing & Debugging**:
 ```bash
@@ -1353,19 +1353,23 @@ export const TwentyFourWords = {
 - ✅ Accessible (keyboard nav, labels)
 
 **Implementation Details**:
-- **Components**: Button, Input, Card, Layout with Tailwind CSS
+- **Components**: Using @sudobility/components (Button, Input, Label, Card, CardContent) + custom Layout
 - **Pages**: Welcome, CreateWallet, ImportWallet, SetPassword, Complete, Home, Unlock
 - **Routing**: React Router with route guards and navigation flow
 - **State**: Zustand store integration for wallet management
 - **Validation**: Password strength, seed phrase (12/24 words), form validation
 - **Styling**: Tailwind CSS with custom primary color palette
+- **Package**: @sudobility/components@2.0.30 (installed with --legacy-peer-deps for React 19 compatibility)
 - **Tests**: Manual testing via dev environment
-- **Commits**: `8ea9cd6` (foundation), `a2de7ff` (UI implementation)
-- **Files**: 14 new files, 1057 insertions
+- **Commits**: `8ea9cd6` (foundation), `a2de7ff` (UI implementation), `916664a` (refactor to @sudobility/components)
+- **Files**: 14 new files, 1057 insertions; later refactored to remove 3 custom components (-1,303 lines)
 
 **Notes**:
-- Used Tailwind CSS instead of @sudobility components (not published packages)
+- Successfully using @sudobility/components for consistency with other mail box applications
+- Installed with --legacy-peer-deps due to React 19 compatibility (package requires React 16-18)
+- @sudobility/design_system not available (404 on npm) - design system included in components package
 - Storybook and E2E tests deferred - functional UI prioritized
+- All components render correctly without runtime errors despite peer dependency warnings
 - Manual testing shows working onboarding flow
 
 ---

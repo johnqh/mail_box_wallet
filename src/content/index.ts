@@ -8,58 +8,123 @@
  */
 
 import browser from 'webextension-polyfill';
+import {
+  Message,
+  MessageTarget,
+  MessageType,
+  ProviderRequestMessage,
+  ProviderResponseMessage,
+  ProviderErrorMessage,
+  ProviderEventMessage,
+} from '../shared/types/messaging';
 
-console.log('Content script loaded on:', window.location.href);
+console.log('✓ Content script loaded on:', window.location.href);
 
 // Inject the inpage script into the page
 function injectInpageScript() {
   try {
     const script = document.createElement('script');
     script.src = browser.runtime.getURL('src/inpage/index.ts');
-    // Don't use type="module" - load as regular script
     script.onload = () => {
-      console.log('Inpage script loaded successfully');
+      console.log('✓ Inpage script injected');
       script.remove(); // Clean up
     };
     script.onerror = (error) => {
-      console.error('Failed to load inpage script:', error);
+      console.error('✗ Failed to load inpage script:', error);
     };
     (document.head || document.documentElement).appendChild(script);
-    console.log('Inpage script injected');
   } catch (error) {
-    console.error('Failed to inject inpage script:', error);
+    console.error('✗ Failed to inject inpage script:', error);
   }
 }
 
-// Inject immediately
-injectInpageScript();
+// Inject immediately if document is ready
+if (document.documentElement) {
+  injectInpageScript();
+} else {
+  // Wait for document to be ready
+  const observer = new MutationObserver(() => {
+    if (document.documentElement) {
+      injectInpageScript();
+      observer.disconnect();
+    }
+  });
+  observer.observe(document, { childList: true });
+}
 
-// Listen for messages from the inpage script
-window.addEventListener('message', (event) => {
+/**
+ * Handle messages from inpage script
+ */
+window.addEventListener('message', async (event: MessageEvent) => {
   // Only accept messages from the same window
   if (event.source !== window) return;
 
-  const { type, payload } = event.data;
+  const message = event.data as Message;
 
-  if (type === 'IDENTITY_WALLET_REQUEST') {
-    console.log('Content script received request from page:', payload);
+  // Verify message is for content script
+  if (!message || message.target !== MessageTarget.CONTENT_SCRIPT) return;
 
-    // Forward to background
-    browser.runtime.sendMessage({ type, payload }).then((response) => {
-      // Send response back to page
-      window.postMessage(
-        {
-          type: 'IDENTITY_WALLET_RESPONSE',
-          payload: response,
-        },
-        '*'
-      );
+  // Only handle provider requests from inpage
+  if (message.type !== MessageType.PROVIDER_REQUEST) return;
+
+  const request = message as ProviderRequestMessage;
+
+  try {
+    // Forward request to background
+    const response = await browser.runtime.sendMessage({
+      id: request.id,
+      type: MessageType.PROVIDER_REQUEST,
+      payload: request.payload,
     });
+
+    // Check if response is an error
+    if (response.error) {
+      const errorMessage: ProviderErrorMessage = {
+        id: request.id,
+        target: MessageTarget.INPAGE,
+        type: MessageType.PROVIDER_ERROR,
+        payload: response.error,
+      };
+      window.postMessage(errorMessage, '*');
+    } else {
+      // Send successful response back to inpage
+      const responseMessage: ProviderResponseMessage = {
+        id: request.id,
+        target: MessageTarget.INPAGE,
+        type: MessageType.PROVIDER_RESPONSE,
+        payload: response.result,
+      };
+      window.postMessage(responseMessage, '*');
+    }
+  } catch (error) {
+    // Handle communication errors
+    const errorMessage: ProviderErrorMessage = {
+      id: request.id,
+      target: MessageTarget.INPAGE,
+      type: MessageType.PROVIDER_ERROR,
+      payload: {
+        code: -32603,
+        message: error instanceof Error ? error.message : 'Internal error',
+      },
+    };
+    window.postMessage(errorMessage, '*');
   }
 });
 
-// Listen for messages from background
-browser.runtime.onMessage.addListener((message) => {
-  console.log('Content script received message from background:', message);
-  return Promise.resolve({ success: true });
+/**
+ * Handle messages from background (events, etc.)
+ */
+browser.runtime.onMessage.addListener((message: any) => {
+  // Forward events to inpage
+  if (message.type === MessageType.PROVIDER_EVENT) {
+    const eventMessage: ProviderEventMessage = {
+      id: message.id || '',
+      target: MessageTarget.INPAGE,
+      type: MessageType.PROVIDER_EVENT,
+      payload: message.payload,
+    };
+    window.postMessage(eventMessage, '*');
+  }
+
+  return Promise.resolve({ received: true });
 });

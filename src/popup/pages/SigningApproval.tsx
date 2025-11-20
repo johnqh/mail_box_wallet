@@ -4,11 +4,10 @@
  * Displays pending signature requests and allows user to approve or reject.
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import browser from 'webextension-polyfill';
 import { Button, Card, CardContent, CardHeader } from '@sudobility/components';
-import { Layout } from '../components';
 
 interface PendingRequest {
   id: string;
@@ -30,7 +29,7 @@ export function SigningApproval() {
         // Get pending request
         const response = await browser.runtime.sendMessage({
           type: 'GET_PENDING_REQUEST',
-        });
+        }) as { request?: PendingRequest };
 
         if (response.request && response.request.type !== 'connect') {
           setRequest(response.request);
@@ -38,7 +37,7 @@ export function SigningApproval() {
           // Get current account
           const accountResponse = await browser.runtime.sendMessage({
             type: 'GET_ACTIVE_ACCOUNT',
-          });
+          }) as { address?: string };
           if (accountResponse.address) {
             setAccount(accountResponse.address);
           }

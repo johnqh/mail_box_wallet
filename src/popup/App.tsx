@@ -4,7 +4,7 @@
  * Router setup and app initialization
  */
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import browser from 'webextension-polyfill';
 import { useWalletStore } from './store/walletStore';
@@ -45,7 +45,7 @@ function App() {
       try {
         const response = await browser.runtime.sendMessage({
           type: 'GET_PENDING_REQUEST',
-        });
+        }) as { request?: { type: string } };
         if (response.request) {
           setPendingRequestType(response.request.type);
         }

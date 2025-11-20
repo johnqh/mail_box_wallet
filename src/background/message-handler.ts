@@ -353,6 +353,9 @@ export class MessageHandler {
    */
   private async handleChainId(): Promise<string> {
     const network = await this.networkService.getCurrentNetwork();
+    if (!network) {
+      throw new Error('No network configured');
+    }
     // chainId is already stored as hex string (e.g., '0x1')
     return network.chainId;
   }
@@ -362,6 +365,9 @@ export class MessageHandler {
    */
   private async handleNetVersion(): Promise<string> {
     const network = await this.networkService.getCurrentNetwork();
+    if (!network) {
+      throw new Error('No network configured');
+    }
     return network.chainId.toString();
   }
 
@@ -545,19 +551,18 @@ export class MessageHandler {
     }
 
     const chainIdHex = params[0].chainId as string;
-    const chainId = parseInt(chainIdHex, 16);
 
-    // Validate network exists
-    const validation = await this.networkService.validateNetwork(chainId);
-    if (!validation.isValid) {
+    // Find network by chain ID
+    const network = await this.networkService.getNetworkByChainId(chainIdHex);
+    if (!network) {
       throw {
         code: 4902,
-        message: `Unrecognized chain ID: ${chainId}`,
+        message: `Unrecognized chain ID: ${chainIdHex}`,
       };
     }
 
     // Switch network
-    await this.networkService.switchNetwork(chainId);
+    await this.networkService.setCurrentNetwork(network.id);
 
     return null;
   }

@@ -4,7 +4,7 @@
  * Generate a new seed phrase and display it to the user
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, CardContent } from '@sudobility/components';
 import { Layout } from '../../components';
@@ -138,7 +138,7 @@ export function CreateWallet() {
               <Button
                 className="w-full"
                 onClick={handleContinue}
-                disabled={!document.getElementById('saved-checkbox')?.['checked']}
+                disabled={!(document.getElementById('saved-checkbox') as HTMLInputElement)?.checked}
               >
                 Continue
               </Button>

@@ -4,7 +4,7 @@
  * Create a password to encrypt the wallet
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input, Label, Card, CardContent } from '@sudobility/components';
 import { Layout } from '../../components';

@@ -4,7 +4,7 @@
  * Import existing wallet using recovery phrase
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, CardContent } from '@sudobility/components';
 import { Layout } from '../../components';
@@ -18,11 +18,11 @@ export function ImportWallet() {
   const [seedPhrase, setSeedPhrase] = useState('');
   const [error, setError] = useState('');
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     try {
       // Validate seed phrase
       const walletService = getService<IWalletService>(SERVICE_TOKENS.WALLET);
-      const isValid = walletService.validateMnemonic(seedPhrase.trim());
+      const isValid = await walletService.validateSeedPhrase(seedPhrase.trim());
 
       if (!isValid) {
         setError('Invalid recovery phrase. Please check and try again.');

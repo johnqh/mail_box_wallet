@@ -4,7 +4,6 @@
  * First page of onboarding - choose to create new or import existing wallet
  */
 
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, CardContent } from '@sudobility/components';
 import { Layout } from '../../components';

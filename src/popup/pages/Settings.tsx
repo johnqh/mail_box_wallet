@@ -4,13 +4,13 @@
  * Manage wallet settings, accounts, security, and networks
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, CardContent, CardHeader, Input, Label } from '@sudobility/components';
 import { Layout } from '../components';
 import { useWalletStore } from '../store/walletStore';
 import { getService, SERVICE_TOKENS } from '@/shared/di';
-import type { IKeyringService, ISessionService, IVaultService } from '@/shared/di';
+import type { IKeyringService, ISessionService } from '@/shared/di';
 
 type SettingsTab = 'accounts' | 'security' | 'networks' | 'advanced';
 

@@ -4,7 +4,7 @@
  * Main wallet dashboard
  */
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, CardContent } from '@sudobility/components';
 import { Layout } from '../components';

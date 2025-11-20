@@ -4,7 +4,7 @@
  * Shows connection approval request from dApps
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import browser from 'webextension-polyfill';
 import { Button, Card, CardContent, CardHeader } from '@sudobility/components';
@@ -31,7 +31,7 @@ export function ConnectApproval() {
       try {
         const response = await browser.runtime.sendMessage({
           type: 'GET_PENDING_REQUEST',
-        });
+        }) as { request?: PendingRequest };
 
         if (response.request) {
           setRequest(response.request);

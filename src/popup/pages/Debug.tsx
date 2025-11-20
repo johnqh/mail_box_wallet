@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { logger, LogContext, LogLevel } from '@/shared/logger';
 import browser from 'webextension-polyfill';
 
@@ -248,7 +248,7 @@ function Debug() {
                   </div>
                   <div style={{ marginLeft: '8px' }}>
                     <div>{log.message}</div>
-                    {log.data && (
+                    {log.data !== undefined && log.data !== null && (
                       <pre
                         style={{
                           marginTop: '4px',

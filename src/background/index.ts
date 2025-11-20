@@ -13,6 +13,9 @@ import browser from 'webextension-polyfill';
 import { registerServices } from '../shared/di';
 import { MessageHandler } from './message-handler';
 import { MessageType } from '../shared/types/messaging';
+import type { IVaultService } from '../shared/di/interfaces/IVaultService';
+import type { IKeyringService } from '../shared/di/interfaces/IKeyringService';
+import type { ISessionService } from '../shared/di/interfaces/ISessionService';
 import { pendingRequestsManager } from './pending-requests';
 
 console.log('✓ Background service worker starting...');
@@ -67,10 +70,10 @@ browser.windows.onRemoved.addListener((windowId) => {
 });
 
 // Listen for messages from popup and content scripts
-browser.runtime.onMessage.addListener(async (message, sender) => {
+browser.runtime.onMessage.addListener(async (message: any, sender: browser.Runtime.MessageSender) => {
   console.log('Background received message:', message.type, 'from:', sender.tab?.url || 'popup');
 
-  const { id, type, payload } = message;
+  const { type, payload } = message;
 
   // Handle provider requests from content script
   if (type === MessageType.PROVIDER_REQUEST) {
@@ -133,9 +136,9 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
     try {
       const { password } = payload;
       const { getService, SERVICE_TOKENS } = await import('../shared/di');
-      const vaultService = getService(SERVICE_TOKENS.VAULT);
-      const keyringService = getService(SERVICE_TOKENS.KEYRING);
-      const sessionService = getService(SERVICE_TOKENS.SESSION);
+      const vaultService = getService<IVaultService>(SERVICE_TOKENS.VAULT);
+      const keyringService = getService<IKeyringService>(SERVICE_TOKENS.KEYRING);
+      const sessionService = getService<ISessionService>(SERVICE_TOKENS.SESSION);
 
       // Unlock vault
       const seedPhrase = await vaultService.unlock(password);

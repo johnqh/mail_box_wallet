@@ -16,6 +16,11 @@ export interface RequestArguments {
  */
 export enum ProviderRpcErrorCode {
   /**
+   * Internal error
+   */
+  INTERNAL_ERROR = -32603,
+
+  /**
    * User rejected the request
    */
   USER_REJECTED_REQUEST = 4001,

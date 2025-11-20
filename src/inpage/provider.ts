@@ -9,9 +9,7 @@ import {
   EIP1193Provider,
   RequestArguments,
   ProviderRpcError,
-  ProviderRpcErrorCode,
   ProviderConnectInfo,
-  ProviderEvents,
 } from '../shared/types/eip1193';
 import {
   MessageTarget,
@@ -266,8 +264,8 @@ export class IdentityWalletProvider implements EIP1193Provider {
   /**
    * Get current chain ID
    */
-  get chainId(): string | null {
-    return this._chainId;
+  get chainId(): string | undefined {
+    return this._chainId ?? undefined;
   }
 
   /**

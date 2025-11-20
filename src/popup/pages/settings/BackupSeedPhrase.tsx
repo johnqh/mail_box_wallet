@@ -4,7 +4,7 @@
  * Display and allow copying of the seed phrase for backup
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, CardContent, Input, Label } from '@sudobility/components';
 import { Layout } from '../../components';

@@ -88,7 +88,7 @@ window.addEventListener('message', async (event: MessageEvent) => {
       id: request.id,
       type: MessageType.PROVIDER_REQUEST,
       payload: request.payload,
-    });
+    }) as { error?: { code: number; message: string; data?: unknown }; result?: unknown };
 
     // Check if response is an error
     if (response.error) {

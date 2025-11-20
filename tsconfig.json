@@ -30,7 +30,7 @@
     },
 
     /* Extension types */
-    "types": ["vite/client", "chrome", "webextension-polyfill"]
+    "types": ["vite/client", "chrome", "webextension-polyfill", "node"]
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

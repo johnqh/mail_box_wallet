@@ -4,7 +4,7 @@
  * Unlock existing wallet with password
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import browser from 'webextension-polyfill';
 import { Button, Input, Label, Card, CardContent } from '@sudobility/components';
@@ -36,7 +36,7 @@ export function Unlock() {
       try {
         const response = await browser.runtime.sendMessage({
           type: 'GET_PENDING_REQUEST',
-        });
+        }) as { request?: { type: string } };
 
         if (response.request) {
           // Navigate to approval page

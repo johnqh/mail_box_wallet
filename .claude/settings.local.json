@@ -6,7 +6,8 @@
       "Bash(npm test:*)",
       "Bash(cat:*)",
       "Bash(npm run dev:*)",
-      "Bash(node debug-sign.js:*)"
+      "Bash(node debug-sign.js:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

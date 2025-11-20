@@ -15,6 +15,9 @@ import { Home } from './pages/Home';
 import { Unlock } from './pages/Unlock';
 import { ConnectApproval } from './pages/ConnectApproval';
 import { SigningApproval } from './pages/SigningApproval';
+import { Settings } from './pages/Settings';
+import { CreateAccount } from './pages/settings/CreateAccount';
+import { BackupSeedPhrase } from './pages/settings/BackupSeedPhrase';
 import Debug from './pages/Debug';
 import {
   Welcome,
@@ -83,6 +86,9 @@ function App() {
           <Route path="/unlock" element={<Unlock />} />
           <Route path="/connect-approval" element={<ConnectApproval />} />
           <Route path="/sign-approval" element={<SigningApproval />} />
+          <Route path="/settings" element={isUnlocked ? <Settings /> : <Navigate to="/unlock" />} />
+          <Route path="/settings/create-account" element={isUnlocked ? <CreateAccount /> : <Navigate to="/unlock" />} />
+          <Route path="/settings/backup-seed" element={isUnlocked ? <BackupSeedPhrase /> : <Navigate to="/unlock" />} />
           <Route path="/debug" element={<Debug />} />
 
           {/* Default Route */}

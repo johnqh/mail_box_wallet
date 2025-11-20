@@ -28,6 +28,7 @@ interface WalletState {
   createWallet: (password: string, seedPhrase: string) => Promise<void>;
   unlockWallet: (password: string) => Promise<void>;
   lockWallet: () => Promise<void>;
+  switchAccount: (address: string) => void;
   setOnboardingStep: (step: WalletState['onboardingStep']) => void;
   setTempSeedPhrase: (seedPhrase: string | null) => void;
   setTempPassword: (password: string | null) => void;
@@ -165,6 +166,14 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     } catch (error) {
       console.error('Failed to lock wallet:', error);
       throw error;
+    }
+  },
+
+  switchAccount: (address: string) => {
+    const { accounts } = get();
+    const account = accounts.find((a) => a.address.toLowerCase() === address.toLowerCase());
+    if (account) {
+      set({ currentAddress: account.address });
     }
   },
 

@@ -16,7 +16,7 @@ type SettingsTab = 'accounts' | 'security' | 'networks' | 'advanced';
 
 export function Settings() {
   const navigate = useNavigate();
-  const { accounts: storeAccounts } = useWalletStore();
+  const { currentAddress, switchAccount } = useWalletStore();
   const [activeTab, setActiveTab] = useState<SettingsTab>('accounts');
   const [accounts, setAccounts] = useState<any[]>([]);
   const [autoLockTimeout, setAutoLockTimeout] = useState<number>(5);
@@ -105,34 +105,42 @@ export function Settings() {
                     <p className="text-sm text-gray-600">No accounts found</p>
                   ) : (
                     <div className="space-y-3">
-                      {accounts.map((account, index) => (
-                        <div
-                          key={account.address}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100"
-                        >
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-gray-900">{account.name}</span>
-                              {index === 0 && (
-                                <span className="px-2 py-0.5 bg-primary-100 text-primary-700 text-xs font-medium rounded">
-                                  Active
-                                </span>
-                              )}
+                      {accounts.map((account) => {
+                        const isActive = account.address.toLowerCase() === currentAddress?.toLowerCase();
+                        return (
+                          <div
+                            key={account.address}
+                            className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                              isActive
+                                ? 'bg-primary-50 border-primary-500'
+                                : 'bg-gray-50 border-transparent hover:bg-gray-100'
+                            }`}
+                            onClick={() => switchAccount(account.address)}
+                          >
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-gray-900">{account.name}</span>
+                                {isActive && (
+                                  <span className="px-2 py-0.5 bg-primary-100 text-primary-700 text-xs font-medium rounded">
+                                    Active
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-600 font-mono mt-1">
+                                {account.address.slice(0, 6)}...{account.address.slice(-4)}
+                              </p>
                             </div>
-                            <p className="text-xs text-gray-600 font-mono mt-1">
-                              {account.address.slice(0, 6)}...{account.address.slice(-4)}
-                            </p>
+                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                              <Button
+                                variant="ghost"
+                                onClick={() => navigate(`/settings/account/${account.address}`)}
+                              >
+                                Manage
+                              </Button>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="ghost"
-                              onClick={() => navigate(`/settings/account/${account.address}`)}
-                            >
-                              Manage
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </CardContent>

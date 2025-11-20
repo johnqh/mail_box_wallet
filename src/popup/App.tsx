@@ -18,6 +18,10 @@ import { SigningApproval } from './pages/SigningApproval';
 import { Settings } from './pages/Settings';
 import { CreateAccount } from './pages/settings/CreateAccount';
 import { BackupSeedPhrase } from './pages/settings/BackupSeedPhrase';
+import { ImportAccount } from './pages/settings/ImportAccount';
+import { ManageAccount } from './pages/settings/ManageAccount';
+import { ChangePassword } from './pages/settings/ChangePassword';
+import { ResetWallet } from './pages/settings/ResetWallet';
 import Debug from './pages/Debug';
 import {
   Welcome,
@@ -88,7 +92,11 @@ function App() {
           <Route path="/sign-approval" element={<SigningApproval />} />
           <Route path="/settings" element={isUnlocked ? <Settings /> : <Navigate to="/unlock" />} />
           <Route path="/settings/create-account" element={isUnlocked ? <CreateAccount /> : <Navigate to="/unlock" />} />
+          <Route path="/settings/import-account" element={isUnlocked ? <ImportAccount /> : <Navigate to="/unlock" />} />
+          <Route path="/settings/account/:address" element={isUnlocked ? <ManageAccount /> : <Navigate to="/unlock" />} />
           <Route path="/settings/backup-seed" element={isUnlocked ? <BackupSeedPhrase /> : <Navigate to="/unlock" />} />
+          <Route path="/settings/change-password" element={isUnlocked ? <ChangePassword /> : <Navigate to="/unlock" />} />
+          <Route path="/settings/reset-wallet" element={isUnlocked ? <ResetWallet /> : <Navigate to="/unlock" />} />
           <Route path="/debug" element={<Debug />} />
 
           {/* Default Route */}

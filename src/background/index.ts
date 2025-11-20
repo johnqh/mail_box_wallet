@@ -10,7 +10,7 @@
  */
 
 import browser from 'webextension-polyfill';
-import { registerServices } from '../shared/di';
+import { registerServices, getService, SERVICE_TOKENS } from '../shared/di';
 import { MessageHandler } from './message-handler';
 import { MessageType } from '../shared/types/messaging';
 import type { IVaultService } from '../shared/di/interfaces/IVaultService';
@@ -135,7 +135,6 @@ browser.runtime.onMessage.addListener(async (message: any, sender: browser.Runti
   if (type === 'UNLOCK_WALLET') {
     try {
       const { password } = payload;
-      const { getService, SERVICE_TOKENS } = await import('../shared/di');
       const vaultService = getService<IVaultService>(SERVICE_TOKENS.VAULT);
       const keyringService = getService<IKeyringService>(SERVICE_TOKENS.KEYRING);
       const sessionService = getService<ISessionService>(SERVICE_TOKENS.SESSION);

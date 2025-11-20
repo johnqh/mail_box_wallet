@@ -7,7 +7,18 @@
       "Bash(cat:*)",
       "Bash(npm run dev:*)",
       "Bash(node debug-sign.js:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run mock-dapp:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vite build)",
+      "Bash(npm --version:*)",
+      "Bash(git -C /Users/johnhuang/0xmail/mail_box_wallet diff HEAD --stat)",
+      "Bash(git -C /Users/johnhuang/0xmail/mail_box_wallet diff HEAD src/popup/index.html)",
+      "Bash(git -C /Users/johnhuang/0xmail/mail_box_wallet diff HEAD vite.config.ts)",
+      "Bash(git -C /Users/johnhuang/0xmail/mail_box_wallet log --oneline -5)"
     ],
     "deny": [],
     "ask": []

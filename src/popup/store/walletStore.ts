@@ -5,6 +5,7 @@
  */
 
 import { create } from 'zustand';
+import browser from 'webextension-polyfill';
 import { getService, SERVICE_TOKENS } from '@/shared/di';
 import type { IVaultService, IKeyringService, ISessionService } from '@/shared/di';
 
@@ -106,17 +107,29 @@ export const useWalletStore = create<WalletState>((set, get) => ({
       const keyringService = getService<IKeyringService>(SERVICE_TOKENS.KEYRING);
       const sessionService = getService<ISessionService>(SERVICE_TOKENS.SESSION);
 
-      // Unlock vault
+      // Unlock vault in popup context
       const seedPhrase = await vaultService.unlock(password);
 
-      // Initialize keyring
+      // Initialize keyring in popup context
       await keyringService.initialize(seedPhrase);
 
       // Get accounts
       const accounts = await keyringService.getAccounts();
 
-      // Start session
+      // Start session in popup context
       await sessionService.startSession();
+
+      // Also unlock wallet in background context for signing operations
+      try {
+        await browser.runtime.sendMessage({
+          type: 'UNLOCK_WALLET',
+          payload: { password },
+        });
+      } catch (error) {
+        console.error('Failed to unlock wallet in background:', error);
+        // Don't fail the unlock if background unlock fails
+        // The background can still derive keys from storage when needed
+      }
 
       set({
         isUnlocked: true,

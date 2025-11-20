@@ -116,6 +116,43 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
     return { success: false, error: 'Request not found' };
   }
 
+  if (type === 'GET_ACTIVE_ACCOUNT') {
+    try {
+      const accounts = await messageHandler['keyringService'].getAccounts();
+      if (accounts.length > 0) {
+        return { address: accounts[0].address };
+      }
+      return { address: null };
+    } catch (error) {
+      console.error('Error getting active account:', error);
+      return { address: null };
+    }
+  }
+
+  if (type === 'UNLOCK_WALLET') {
+    try {
+      const { password } = payload;
+      const { getService, SERVICE_TOKENS } = await import('../shared/di');
+      const vaultService = getService(SERVICE_TOKENS.VAULT);
+      const keyringService = getService(SERVICE_TOKENS.KEYRING);
+      const sessionService = getService(SERVICE_TOKENS.SESSION);
+
+      // Unlock vault
+      const seedPhrase = await vaultService.unlock(password);
+
+      // Initialize keyring
+      await keyringService.initialize(seedPhrase);
+
+      // Start session
+      await sessionService.startSession();
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error unlocking wallet in background:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to unlock' };
+    }
+  }
+
   // Default response
   return { success: true };
 });

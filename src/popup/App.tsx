@@ -14,6 +14,7 @@ import { registerServices } from '@/shared/di';
 import { Home } from './pages/Home';
 import { Unlock } from './pages/Unlock';
 import { ConnectApproval } from './pages/ConnectApproval';
+import { SigningApproval } from './pages/SigningApproval';
 import Debug from './pages/Debug';
 import {
   Welcome,
@@ -26,7 +27,7 @@ import {
 function App() {
   const { isInitialized, isUnlocked, checkInitialization } = useWalletStore();
   const [loading, setLoading] = useState(true);
-  const [hasPendingRequest, setHasPendingRequest] = useState(false);
+  const [pendingRequestType, setPendingRequestType] = useState<string | null>(null);
 
   useEffect(() => {
     // Initialize DI services
@@ -38,7 +39,9 @@ function App() {
         const response = await browser.runtime.sendMessage({
           type: 'GET_PENDING_REQUEST',
         });
-        setHasPendingRequest(!!response.request);
+        if (response.request) {
+          setPendingRequestType(response.request.type);
+        }
       } catch (error) {
         console.error('Failed to check for pending requests:', error);
       }
@@ -79,6 +82,7 @@ function App() {
           <Route path="/home" element={isUnlocked ? <Home /> : <Navigate to="/unlock" />} />
           <Route path="/unlock" element={<Unlock />} />
           <Route path="/connect-approval" element={<ConnectApproval />} />
+          <Route path="/sign-approval" element={<SigningApproval />} />
           <Route path="/debug" element={<Debug />} />
 
           {/* Default Route */}
@@ -87,8 +91,10 @@ function App() {
             element={
               !isInitialized ? (
                 <Navigate to="/onboarding/welcome" />
-              ) : hasPendingRequest ? (
+              ) : pendingRequestType === 'connect' ? (
                 <Navigate to="/connect-approval" />
+              ) : pendingRequestType === 'sign' || pendingRequestType === 'signTypedData' ? (
+                <Navigate to="/sign-approval" />
               ) : isUnlocked ? (
                 <Navigate to="/home" />
               ) : (

@@ -120,7 +120,22 @@ export class KeyringService implements IKeyringService {
    * Get account by address
    */
   async getAccount(address: string): Promise<Account | null> {
-    return this.accounts.find((a) => a.address.toLowerCase() === address.toLowerCase()) || null;
+    // First check in-memory accounts
+    const account = this.accounts.find((a) => a.address.toLowerCase() === address.toLowerCase());
+    if (account) {
+      return account;
+    }
+
+    // If not found and accounts array is empty, try loading from storage
+    // This handles the case where popup unlocked but background keyring wasn't initialized
+    if (this.accounts.length === 0) {
+      const storedAccounts = await this.storage.get<Account[]>(ACCOUNTS_STORAGE_KEY);
+      if (storedAccounts && storedAccounts.length > 0) {
+        return storedAccounts.find((a) => a.address.toLowerCase() === address.toLowerCase()) || null;
+      }
+    }
+
+    return null;
   }
 
   /**

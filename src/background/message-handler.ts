@@ -355,16 +355,65 @@ export class MessageHandler {
       };
     }
 
-    // Get private key for address
-    const privateKey = await this.keyringService.getPrivateKey(address);
+    // Request user approval
+    return new Promise((resolve, reject) => {
+      // Generate request ID
+      const requestId = `sign_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
-    // TODO: Show signing approval popup in Phase 7
-    // For now, auto-approve for development
+      // Store pending request
+      pendingRequestsManager.addRequest({
+        id: requestId,
+        type: 'sign',
+        origin: 'unknown', // Will be set by caller if available
+        timestamp: Date.now(),
+        params: { message, address },
+        resolve: async (approved: boolean) => {
+          if (approved) {
+            try {
+              // Get private key for address
+              const privateKey = await this.keyringService.getPrivateKey(address);
 
-    // Sign message
-    const result = await this.signerService.personalSign(message, privateKey);
+              // Sign message
+              const result = await this.signerService.personalSign(message, privateKey);
 
-    return result.signature;
+              resolve(result.signature);
+            } catch (error) {
+              console.error('Error signing message:', error);
+              reject({
+                code: ProviderRpcErrorCode.INTERNAL_ERROR,
+                message: error instanceof Error ? error.message : 'Failed to sign message',
+              });
+            }
+          } else {
+            reject({
+              code: ProviderRpcErrorCode.UNAUTHORIZED,
+              message: 'User rejected the request',
+            });
+          }
+        },
+        reject: (error: any) => {
+          reject(error);
+        },
+      });
+
+      // Trigger popup opening
+      if (this.onRequestApproval) {
+        this.onRequestApproval().catch((error) => {
+          console.error('Failed to open approval popup:', error);
+          pendingRequestsManager.removeRequest(requestId);
+          reject({
+            code: ProviderRpcErrorCode.INTERNAL_ERROR,
+            message: 'Failed to open approval popup',
+          });
+        });
+      } else {
+        pendingRequestsManager.removeRequest(requestId);
+        reject({
+          code: ProviderRpcErrorCode.INTERNAL_ERROR,
+          message: 'Approval callback not set',
+        });
+      }
+    });
   }
 
   /**
@@ -390,16 +439,65 @@ export class MessageHandler {
       };
     }
 
-    // Get private key for address
-    const privateKey = await this.keyringService.getPrivateKey(address);
+    // Request user approval
+    return new Promise((resolve, reject) => {
+      // Generate request ID
+      const requestId = `signTypedData_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
-    // TODO: Show signing approval popup in Phase 7
-    // For now, auto-approve for development
+      // Store pending request
+      pendingRequestsManager.addRequest({
+        id: requestId,
+        type: 'signTypedData',
+        origin: 'unknown', // Will be set by caller if available
+        timestamp: Date.now(),
+        params: { address, typedData },
+        resolve: async (approved: boolean) => {
+          if (approved) {
+            try {
+              // Get private key for address
+              const privateKey = await this.keyringService.getPrivateKey(address);
 
-    // Sign typed data
-    const result = await this.signerService.signTypedData(typedData, privateKey);
+              // Sign typed data
+              const result = await this.signerService.signTypedData(typedData, privateKey);
 
-    return result.signature;
+              resolve(result.signature);
+            } catch (error) {
+              console.error('Error signing typed data:', error);
+              reject({
+                code: ProviderRpcErrorCode.INTERNAL_ERROR,
+                message: error instanceof Error ? error.message : 'Failed to sign typed data',
+              });
+            }
+          } else {
+            reject({
+              code: ProviderRpcErrorCode.UNAUTHORIZED,
+              message: 'User rejected the request',
+            });
+          }
+        },
+        reject: (error: any) => {
+          reject(error);
+        },
+      });
+
+      // Trigger popup opening
+      if (this.onRequestApproval) {
+        this.onRequestApproval().catch((error) => {
+          console.error('Failed to open approval popup:', error);
+          pendingRequestsManager.removeRequest(requestId);
+          reject({
+            code: ProviderRpcErrorCode.INTERNAL_ERROR,
+            message: 'Failed to open approval popup',
+          });
+        });
+      } else {
+        pendingRequestsManager.removeRequest(requestId);
+        reject({
+          code: ProviderRpcErrorCode.INTERNAL_ERROR,
+          message: 'Approval callback not set',
+        });
+      }
+    });
   }
 
   /**

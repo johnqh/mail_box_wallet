@@ -4,15 +4,35 @@
  * Main wallet dashboard
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, CardContent } from '@sudobility/components';
 import { Layout } from '../components';
 import { useWalletStore } from '../store/walletStore';
+import { getService, SERVICE_TOKENS } from '@/shared/di';
+import type { IKeyringService } from '@/shared/di';
 
 export function Home() {
   const navigate = useNavigate();
   const { currentAddress, lockWallet } = useWalletStore();
+
+  // Load account on mount if not already loaded
+  useEffect(() => {
+    async function loadAccount() {
+      if (!currentAddress) {
+        try {
+          const keyringService = getService<IKeyringService>(SERVICE_TOKENS.KEYRING);
+          const accounts = await keyringService.getAccounts();
+          if (accounts.length > 0) {
+            useWalletStore.setState({ currentAddress: accounts[0].address, accounts });
+          }
+        } catch (error) {
+          console.error('Failed to load account:', error);
+        }
+      }
+    }
+    loadAccount();
+  }, [currentAddress]);
 
   const handleLock = async () => {
     await lockWallet();

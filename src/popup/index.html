@@ -7,6 +7,7 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Shim required: Vite production builds don't include jsx-dev-runtime -->
     <script type="module" src="/src/shared/utils/ensureJsxDevRuntime.ts"></script>
     <script type="module" src="/src/popup/main.tsx"></script>
   </body>

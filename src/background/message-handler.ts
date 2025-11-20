@@ -48,6 +48,8 @@ const BLOCKED_METHODS = new Set([
   ...TRANSACTION_METHODS,
 ]);
 
+const CONNECTED_SITES_STORAGE_KEY = 'connectedSites';
+
 /**
  * Message Handler Class
  */
@@ -57,7 +59,7 @@ export class MessageHandler {
   private networkService: INetworkService;
   private sessionService: ISessionService;
 
-  // Track connected sites
+  // Track connected sites (loaded from storage)
   private connectedSites = new Map<string, boolean>();
 
   // Callback to trigger popup opening
@@ -69,6 +71,36 @@ export class MessageHandler {
     this.signerService = getService<ISignerService>(SERVICE_TOKENS.SIGNER);
     this.networkService = getService<INetworkService>(SERVICE_TOKENS.NETWORK);
     this.sessionService = getService<ISessionService>(SERVICE_TOKENS.SESSION);
+
+    // Load connected sites from storage
+    this.loadConnectedSites();
+  }
+
+  /**
+   * Load connected sites from storage
+   */
+  private async loadConnectedSites(): Promise<void> {
+    try {
+      const stored = await chrome.storage.local.get(CONNECTED_SITES_STORAGE_KEY);
+      if (stored[CONNECTED_SITES_STORAGE_KEY]) {
+        const sites = stored[CONNECTED_SITES_STORAGE_KEY] as string[];
+        sites.forEach(site => this.connectedSites.set(site, true));
+      }
+    } catch (error) {
+      console.error('Failed to load connected sites:', error);
+    }
+  }
+
+  /**
+   * Save connected sites to storage
+   */
+  private async saveConnectedSites(): Promise<void> {
+    try {
+      const sites = Array.from(this.connectedSites.keys());
+      await chrome.storage.local.set({ [CONNECTED_SITES_STORAGE_KEY]: sites });
+    } catch (error) {
+      console.error('Failed to save connected sites:', error);
+    }
   }
 
   /**
@@ -214,9 +246,10 @@ export class MessageHandler {
           resolve: async (approved: boolean) => {
             if (approved) {
               try {
-                // Mark site as connected
+                // Mark site as connected and save to storage
                 if (origin) {
                   this.connectedSites.set(origin, true);
+                  await this.saveConnectedSites();
                 }
 
                 // Check if session is now unlocked (user may have unlocked during approval)

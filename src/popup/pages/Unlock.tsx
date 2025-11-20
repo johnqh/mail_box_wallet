@@ -59,63 +59,68 @@ export function Unlock() {
   };
 
   return (
-    <Layout>
-      <div className="max-w-md mx-auto mt-12">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
-            <span className="text-3xl">🔐</span>
+    <Layout
+      title="Identity Wallet"
+      subtitle="Unlock your wallet to continue"
+      actions={
+        <div className="space-y-2">
+          <Button
+            onClick={handleUnlock}
+            className="w-full"
+            disabled={!password || loading}
+          >
+            {loading ? 'Unlocking...' : 'Unlock Wallet'}
+          </Button>
+          <button
+            onClick={() => navigate('/settings/reset-wallet')}
+            className="w-full text-sm text-gray-600 hover:text-gray-900"
+          >
+            Forgot password? Reset wallet
+          </button>
+        </div>
+      }
+    >
+      {/* Logo */}
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-3">
+          <span className="text-3xl">🔐</span>
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 mb-1">Welcome Back</h2>
+      </div>
+
+      {/* Password Form */}
+      <Card>
+        <CardContent>
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError('');
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleUnlock(e);
+                }
+              }}
+              placeholder="Enter your password"
+              className="w-full"
+              autoFocus
+            />
+            {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-600">
-            Unlock your wallet to continue
-          </p>
-        </div>
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardContent>
-            <form onSubmit={handleUnlock}>
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setError('');
-                  }}
-                  placeholder="Enter your password"
-                  className="w-full"
-                  autoFocus
-                />
-                {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-              </div>
-
-              <div className="mt-6">
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={!password || loading}
-                >
-                  {loading ? 'Unlocking...' : 'Unlock Wallet'}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Forgot your password?{' '}
-            <button
-              onClick={() => navigate('/reset')}
-              className="text-primary-600 hover:text-primary-700 font-medium"
-            >
-              Reset Wallet
-            </button>
-          </p>
-        </div>
+      {/* Info Message */}
+      <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <p className="text-xs text-blue-900">
+          Your wallet remains locked for security. Enter your password to access your accounts and sign messages.
+        </p>
       </div>
     </Layout>
   );

@@ -61,7 +61,7 @@ function App() {
     ]).finally(() => {
       setLoading(false);
     });
-  }, []);
+  }, [checkInitialization]);
 
   if (loading) {
     return (

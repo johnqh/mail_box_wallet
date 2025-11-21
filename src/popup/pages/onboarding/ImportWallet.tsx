@@ -32,7 +32,7 @@ export function ImportWallet() {
       setTempSeedPhrase(seedPhrase.trim());
       setOnboardingStep('password');
       navigate('/onboarding/password');
-    } catch (err) {
+    } catch {
       setError('Failed to validate recovery phrase');
     }
   };

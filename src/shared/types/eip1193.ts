@@ -94,8 +94,8 @@ export interface EIP1193Provider {
   request(args: RequestArguments): Promise<unknown>;
 
   // Event emitter methods
-  on(event: string, listener: (...args: any[]) => void): void;
-  removeListener(event: string, listener: (...args: any[]) => void): void;
+  on(event: string, listener: (...args: unknown[]) => void): void;
+  removeListener(event: string, listener: (...args: unknown[]) => void): void;
 
   // Provider identification
   isIdentityWallet?: boolean;

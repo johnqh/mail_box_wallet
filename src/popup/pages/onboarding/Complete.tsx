@@ -16,7 +16,7 @@ export function Complete() {
 
   useEffect(() => {
     setOnboardingStep('complete');
-  }, []);
+  }, [setOnboardingStep]);
 
   const handleContinue = () => {
     navigate('/home');
@@ -30,7 +30,7 @@ export function Complete() {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
             <span className="text-4xl">✓</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">You're All Set!</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">You&apos;re All Set!</h1>
           <p className="text-gray-600">
             Your wallet has been created successfully
           </p>
@@ -53,7 +53,7 @@ export function Complete() {
         {/* Next Steps */}
         <Card className="mb-6">
           <CardContent>
-            <h3 className="font-semibold text-gray-900 mb-3">What's Next?</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">What&apos;s Next?</h3>
             <ul className="space-y-2 text-sm text-gray-700">
               <li className="flex items-start">
                 <span className="mr-2">✓</span>

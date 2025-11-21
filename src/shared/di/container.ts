@@ -8,7 +8,7 @@
  * Simple DI Container implementation
  */
 class Container {
-  private services = new Map<string, any>();
+  private services = new Map<string, unknown>();
 
   register<T>(token: string, service: T): void {
     this.services.set(token, service);

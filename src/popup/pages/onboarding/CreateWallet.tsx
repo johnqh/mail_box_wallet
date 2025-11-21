@@ -78,7 +78,7 @@ export function CreateWallet() {
                   <ul className="text-sm text-gray-700 space-y-1">
                     <li>• Never share your recovery phrase with anyone</li>
                     <li>• Store it in a safe place offline</li>
-                    <li>• You'll need it to restore your wallet</li>
+                    <li>• You&apos;ll need it to restore your wallet</li>
                     <li>• Anyone with this phrase can access your wallet</li>
                   </ul>
                 </div>

@@ -36,7 +36,7 @@ export class IdentityWalletProvider implements EIP1193Provider {
   private _isConnected = false;
 
   // Event listeners
-  private _eventListeners = new Map<string, Set<(...args: any[]) => void>>();
+  private _eventListeners = new Map<string, Set<(...args: unknown[]) => void>>();
 
   // Request tracking
   private _pendingRequests = new Map<
@@ -221,7 +221,7 @@ export class IdentityWalletProvider implements EIP1193Provider {
   /**
    * Add event listener (EIP-1193)
    */
-  on(event: string, listener: (...args: any[]) => void): void {
+  on(event: string, listener: (...args: unknown[]) => void): void {
     if (!this._eventListeners.has(event)) {
       this._eventListeners.set(event, new Set());
     }
@@ -231,7 +231,7 @@ export class IdentityWalletProvider implements EIP1193Provider {
   /**
    * Remove event listener (EIP-1193)
    */
-  removeListener(event: string, listener: (...args: any[]) => void): void {
+  removeListener(event: string, listener: (...args: unknown[]) => void): void {
     const listeners = this._eventListeners.get(event);
     if (listeners) {
       listeners.delete(listener);

@@ -14,7 +14,7 @@ interface PendingRequest {
   type: 'connect' | 'sign' | 'signTypedData';
   origin: string;
   timestamp: number;
-  params?: any;
+  params?: unknown;
 }
 
 export function SigningApproval() {
@@ -108,7 +108,7 @@ export function SigningApproval() {
     }
   };
 
-  const formatTypedData = (typedData: any): string => {
+  const formatTypedData = (typedData: unknown): string => {
     try {
       return JSON.stringify(typedData, null, 2);
     } catch {
@@ -135,7 +135,8 @@ export function SigningApproval() {
     if (!request) return null;
 
     if (request.type === 'sign') {
-      const message = request.params?.message || request.params?.[0] || '';
+      const params = request.params as { message?: string; [key: number]: unknown } | undefined;
+      const message = (params?.message || params?.[0] || '') as string;
       const decoded = decodeMessage(message);
       const isSignInWithEthereum = isSIWEMessage(message);
 
@@ -173,7 +174,8 @@ export function SigningApproval() {
     }
 
     if (request.type === 'signTypedData') {
-      const typedData = request.params?.typedData || request.params?.[1];
+      const params = request.params as { typedData?: unknown; [key: number]: unknown } | undefined;
+      const typedData = params?.typedData || params?.[1];
 
       return (
         <div>
@@ -194,7 +196,8 @@ export function SigningApproval() {
     if (!request) return 'Signature Request';
 
     if (request.type === 'sign') {
-      const message = request.params?.message || request.params?.[0] || '';
+      const params = request.params as { message?: string; [key: number]: unknown } | undefined;
+      const message = (params?.message || params?.[0] || '') as string;
       if (isSIWEMessage(message)) {
         return 'Sign-In Request';
       }

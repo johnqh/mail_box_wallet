@@ -9,9 +9,9 @@ export interface PendingRequest {
   type: 'connect' | 'sign' | 'signTypedData';
   origin: string;
   timestamp: number;
-  params?: any;
-  resolve: (result: any) => void;
-  reject: (error: any) => void;
+  params?: unknown;
+  resolve: (result: boolean) => void;
+  reject: (error: unknown) => void;
 }
 
 class PendingRequestsManager {

@@ -16,7 +16,7 @@ interface PendingRequest {
   type: 'connect' | 'sign' | 'signTypedData';
   origin: string;
   timestamp: number;
-  params?: any;
+  params?: unknown;
 }
 
 export function ConnectApproval() {

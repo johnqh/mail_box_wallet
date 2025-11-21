@@ -127,14 +127,15 @@ window.addEventListener('message', async (event: MessageEvent) => {
 /**
  * Handle messages from background (events, etc.)
  */
-browser.runtime.onMessage.addListener((message: any) => {
+browser.runtime.onMessage.addListener((message: unknown) => {
+  const msg = message as { type: string; id: string; event: string; data: unknown };
   // Forward events to inpage
-  if (message.type === MessageType.PROVIDER_EVENT) {
+  if (msg.type === MessageType.PROVIDER_EVENT) {
     const eventMessage: ProviderEventMessage = {
-      id: message.id || '',
+      id: msg.id || '',
       target: MessageTarget.INPAGE,
       type: MessageType.PROVIDER_EVENT,
-      payload: message.payload,
+      payload: { event: msg.event, data: msg.data },
     };
     window.postMessage(eventMessage, '*');
   }

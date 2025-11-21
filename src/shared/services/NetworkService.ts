@@ -324,7 +324,7 @@ export class NetworkService implements INetworkService {
       // Try to get chain ID
       await this.rpcCall<string>(rpcUrl, 'eth_chainId');
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

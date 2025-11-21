@@ -7,7 +7,7 @@
 import { create } from 'zustand';
 import browser from 'webextension-polyfill';
 import { getService, SERVICE_TOKENS } from '@/shared/di';
-import type { IVaultService, IKeyringService, ISessionService } from '@/shared/di';
+import type { IVaultService, IKeyringService, ISessionService, Account } from '@/shared/di';
 
 interface WalletState {
   // Wallet initialization state
@@ -21,7 +21,7 @@ interface WalletState {
 
   // Current wallet state
   currentAddress: string | null;
-  accounts: any[];
+  accounts: Account[];
 
   // Actions
   checkInitialization: () => Promise<void>;

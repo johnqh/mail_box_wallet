@@ -10,7 +10,7 @@ import { Button, Card, CardContent, CardHeader, Input, Label } from '@sudobility
 import { Layout } from '../components';
 import { useWalletStore } from '../store/walletStore';
 import { getService, SERVICE_TOKENS } from '@/shared/di';
-import type { IKeyringService, ISessionService } from '@/shared/di';
+import type { IKeyringService, ISessionService, Account } from '@/shared/di';
 
 type SettingsTab = 'accounts' | 'security' | 'networks' | 'advanced';
 
@@ -18,7 +18,7 @@ export function Settings() {
   const navigate = useNavigate();
   const { currentAddress, switchAccount } = useWalletStore();
   const [activeTab, setActiveTab] = useState<SettingsTab>('accounts');
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [autoLockTimeout, setAutoLockTimeout] = useState<number>(5);
 
   // Load accounts and settings on mount

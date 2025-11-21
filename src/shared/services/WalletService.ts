@@ -11,6 +11,7 @@ import { generateMnemonic, mnemonicToSeed, validateMnemonic } from '@scure/bip39
 import { wordlist } from '@scure/bip39/wordlists/english.js';
 import { HDKey } from '@scure/bip32';
 import { keccak_256 } from '@noble/hashes/sha3.js';
+import { getPublicKey } from '@noble/secp256k1';
 import { IWalletService } from '@/shared/di/interfaces/IWalletService';
 
 export class WalletService implements IWalletService {
@@ -66,9 +67,6 @@ export class WalletService implements IWalletService {
    * Get Ethereum address from private key
    */
   async getAddress(privateKey: string): Promise<string> {
-    // Import secp256k1 for public key derivation
-    const { getPublicKey } = await import('@noble/secp256k1');
-
     // Remove 0x prefix if present
     const privKeyHex = privateKey.startsWith('0x') ? privateKey.slice(2) : privateKey;
 

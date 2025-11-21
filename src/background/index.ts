@@ -17,6 +17,7 @@ import type { IVaultService } from '../shared/di/interfaces/IVaultService';
 import type { IKeyringService } from '../shared/di/interfaces/IKeyringService';
 import type { ISessionService } from '../shared/di/interfaces/ISessionService';
 import { pendingRequestsManager } from './pending-requests';
+import type { RequestArguments } from '../shared/types/eip1193';
 
 console.log('✓ Background service worker starting...');
 
@@ -70,10 +71,9 @@ browser.windows.onRemoved.addListener((windowId) => {
 });
 
 // Listen for messages from popup and content scripts
-browser.runtime.onMessage.addListener(async (message: any, sender: browser.Runtime.MessageSender) => {
-  console.log('Background received message:', message.type, 'from:', sender.tab?.url || 'popup');
-
-  const { type, payload } = message;
+browser.runtime.onMessage.addListener(async (message: unknown, sender: browser.Runtime.MessageSender) => {
+  const { type, payload } = message as { type: string; payload?: Record<string, unknown> };
+  console.log('Background received message:', type, 'from:', sender.tab?.url || 'popup');
 
   // Handle provider requests from content script
   if (type === MessageType.PROVIDER_REQUEST) {
@@ -81,7 +81,7 @@ browser.runtime.onMessage.addListener(async (message: any, sender: browser.Runti
     const origin = sender.tab?.url ? new URL(sender.tab.url).origin : undefined;
 
     // Handle the request
-    const response = await messageHandler.handleRequest(payload, origin);
+    const response = await messageHandler.handleRequest(payload as unknown as RequestArguments, origin);
 
     // Return response with same ID for correlation
     return response;
@@ -95,7 +95,7 @@ browser.runtime.onMessage.addListener(async (message: any, sender: browser.Runti
   }
 
   if (type === 'APPROVE_REQUEST') {
-    const { requestId } = payload;
+    const { requestId } = payload as { requestId: string };
     const request = pendingRequestsManager.getRequest(requestId);
     if (request) {
       request.resolve(true);
@@ -106,7 +106,7 @@ browser.runtime.onMessage.addListener(async (message: any, sender: browser.Runti
   }
 
   if (type === 'REJECT_REQUEST') {
-    const { requestId } = payload;
+    const { requestId } = payload as { requestId: string };
     const request = pendingRequestsManager.getRequest(requestId);
     if (request) {
       request.reject({
@@ -134,7 +134,7 @@ browser.runtime.onMessage.addListener(async (message: any, sender: browser.Runti
 
   if (type === 'UNLOCK_WALLET') {
     try {
-      const { password } = payload;
+      const { password } = payload as { password: string };
       const vaultService = getService<IVaultService>(SERVICE_TOKENS.VAULT);
       const keyringService = getService<IKeyringService>(SERVICE_TOKENS.KEYRING);
       const sessionService = getService<ISessionService>(SERVICE_TOKENS.SESSION);

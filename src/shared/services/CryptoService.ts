@@ -92,7 +92,7 @@ export class CryptoService implements ICryptoService {
 
       // Convert to string
       return new TextDecoder().decode(plaintext);
-    } catch (error) {
+    } catch {
       throw new Error('Decryption failed: Invalid password or corrupted data');
     }
   }

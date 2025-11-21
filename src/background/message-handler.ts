@@ -149,11 +149,12 @@ export class MessageHandler {
 
       // Handle known error types
       if (error && typeof error === 'object' && 'code' in error) {
+        const errorObj = error as { code: number; message?: string; data?: unknown };
         return {
           error: {
-            code: (error as any).code,
-            message: (error as any).message || 'Unknown error',
-            data: (error as any).data,
+            code: errorObj.code,
+            message: errorObj.message || 'Unknown error',
+            data: errorObj.data,
           },
         };
       }
@@ -211,7 +212,7 @@ export class MessageHandler {
 
       // Wallet methods
       case 'wallet_switchEthereumChain':
-        return this.handleSwitchChain(params as any[]);
+        return this.handleSwitchChain(params as unknown[]);
 
       default:
         throw {
@@ -287,7 +288,7 @@ export class MessageHandler {
               });
             }
           },
-          reject: (error: any) => {
+          reject: (error: unknown) => {
             reject(error);
           },
         });
@@ -430,7 +431,7 @@ export class MessageHandler {
             });
           }
         },
-        reject: (error: any) => {
+        reject: (error: unknown) => {
           reject(error);
         },
       });
@@ -514,7 +515,7 @@ export class MessageHandler {
             });
           }
         },
-        reject: (error: any) => {
+        reject: (error: unknown) => {
           reject(error);
         },
       });
@@ -542,15 +543,15 @@ export class MessageHandler {
   /**
    * Handle wallet_switchEthereumChain - switch to different chain
    */
-  private async handleSwitchChain(params: any[]): Promise<null> {
-    if (!params || params.length < 1) {
+  private async handleSwitchChain(params: unknown[]): Promise<null> {
+    if (!params || params.length < 1 || typeof params[0] !== 'object' || !params[0]) {
       throw {
         code: -32602,
         message: 'Invalid params: expected [{ chainId }]',
       };
     }
 
-    const chainIdHex = params[0].chainId as string;
+    const chainIdHex = (params[0] as { chainId: string }).chainId;
 
     // Find network by chain ID
     const network = await this.networkService.getNetworkByChainId(chainIdHex);

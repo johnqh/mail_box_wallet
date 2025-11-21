@@ -88,7 +88,7 @@ export class VaultService implements IVaultService {
       this.seedPhrase = await this.crypto.decrypt(vaultData.encrypted, key);
       this.unlocked = true;
       return this.seedPhrase;
-    } catch (error) {
+    } catch {
       throw new Error('Invalid password');
     }
   }
@@ -195,7 +195,7 @@ export class VaultService implements IVaultService {
 
       this.seedPhrase = seedPhrase;
       this.unlocked = true;
-    } catch (error) {
+    } catch {
       throw new Error('Invalid password or corrupted vault data');
     }
   }

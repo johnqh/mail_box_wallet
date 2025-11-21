@@ -4,19 +4,19 @@
  * Rename, delete, or export individual accounts
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, CardContent, CardHeader, Input, Label } from '@sudobility/components';
 import { Layout } from '../../components';
 import { useWalletStore } from '../../store/walletStore';
 import { getService, SERVICE_TOKENS } from '@/shared/di';
-import type { IKeyringService } from '@/shared/di';
+import type { IKeyringService, Account } from '@/shared/di';
 
 export function ManageAccount() {
   const navigate = useNavigate();
   const { address } = useParams<{ address: string }>();
   const { currentAddress, switchAccount } = useWalletStore();
-  const [account, setAccount] = useState<any>(null);
+  const [account, setAccount] = useState<Account | null>(null);
   const [newName, setNewName] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -26,11 +26,7 @@ export function ManageAccount() {
   const [copiedName, setCopiedName] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
 
-  useEffect(() => {
-    loadAccount();
-  }, [address]);
-
-  const loadAccount = async () => {
+  const loadAccount = useCallback(async () => {
     if (!address) {
       navigate('/settings');
       return;
@@ -53,7 +49,11 @@ export function ManageAccount() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [address, navigate]);
+
+  useEffect(() => {
+    loadAccount();
+  }, [loadAccount]);
 
   const handleRename = async () => {
     if (!newName.trim() || !address) return;
@@ -66,7 +66,9 @@ export function ManageAccount() {
       await keyringService.updateAccountName(address, newName.trim());
 
       // Update local state
-      setAccount({ ...account, name: newName.trim() });
+      if (account) {
+        setAccount({ ...account, name: newName.trim() });
+      }
 
       // Show success feedback
       setCopiedName(false);

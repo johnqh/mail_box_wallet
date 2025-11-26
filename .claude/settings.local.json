@@ -18,7 +18,10 @@
       "Bash(git -C /Users/johnhuang/0xmail/mail_box_wallet diff HEAD --stat)",
       "Bash(git -C /Users/johnhuang/0xmail/mail_box_wallet diff HEAD src/popup/index.html)",
       "Bash(git -C /Users/johnhuang/0xmail/mail_box_wallet diff HEAD vite.config.ts)",
-      "Bash(git -C /Users/johnhuang/0xmail/mail_box_wallet log --oneline -5)"
+      "Bash(git -C /Users/johnhuang/0xmail/mail_box_wallet log --oneline -5)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm view:*)"
     ],
     "deny": [],
     "ask": []

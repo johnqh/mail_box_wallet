@@ -1,6 +1,6 @@
 {
   "name": "mail_box_wallet",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Identity-focused crypto wallet browser extension",
   "type": "module",
   "scripts": {

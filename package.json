@@ -1,6 +1,6 @@
 {
   "name": "mail_box_wallet",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Identity-focused crypto wallet browser extension",
   "type": "module",
   "scripts": {
@@ -78,7 +78,7 @@
     "@scure/bip32": "^2.0.1",
     "@scure/bip39": "^2.0.1",
     "@sudobility/components": "^4.0.1",
-    "@sudobility/di": "^1.4.23",
+    "@sudobility/di": "^1.4.24",
     "@sudobility/di_web": "^0.1.1",
     "@sudobility/types": "^1.9.18",
     "class-variance-authority": "^0.7.1",
